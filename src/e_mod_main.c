@@ -303,8 +303,10 @@ _ngi_win_new(Ng *ng)
     * 
     *   }
     * else */
-   if (ngi_config->use_composite)
+
+  if (ecore_x_screen_is_composited(ng->zone->container->manager->num))
      {
+        DBG("composite");
 	ecore_evas_alpha_set(win->popup->ecore_evas, 1);
 	win->popup->evas_win = ecore_evas_software_x11_window_get(win->popup->ecore_evas);
 	win->input = win->popup->evas_win;
@@ -312,14 +314,12 @@ _ngi_win_new(Ng *ng)
      }
    else
      {
+        DBG("no composite");
 	ecore_evas_shaped_set(win->popup->ecore_evas, 1);
-
-	win->input = ecore_x_window_input_new(ng->zone->container->win, 0, 0, 1, 1);
-	ecore_x_window_show(win->input);
-
 	win->fake_iwin = E_OBJECT_ALLOC(E_Win, E_WIN_TYPE, NULL);
-	win->fake_iwin->evas_win = win->input;
-	win->drop_win = E_OBJECT(win->fake_iwin);
+	win->fake_iwin->evas_win = ecore_evas_software_x11_window_get(win->popup->ecore_evas);
+        win->input = win->fake_iwin->evas_win;
+	win->drop_win = E_OBJECT(win->popup);
      }
 
    ecore_x_netwm_window_type_set(win->popup->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
