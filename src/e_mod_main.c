@@ -1664,21 +1664,9 @@ _ngi_init_timer_cb(void *data)
 {
    Eina_List *l;
    Config_Item *ci;
-   int have_comp = 0;
    E_Config_Module *em;
    
-   // FIXME: major hack. checking in advance for comp. eventully comp
-   // will be rolled into e17 core and this won't be needed
-   EINA_LIST_FOREACH(e_config->modules, l, em)
-     {
-	if (!strcmp(em->name, "comp"))
-	  {
-	     have_comp = 1;
-	     break;
-	  }
-     }
-
-   if (have_comp || ecore_x_screen_is_composited(0))
+   if ((e_config->use_composite) || ecore_x_screen_is_composited(0))
      ngi_config->use_composite = EINA_TRUE;
 
    EINA_LIST_FOREACH (ngi_config->items, l, ci)
