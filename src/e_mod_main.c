@@ -33,6 +33,7 @@ static void           _ngi_label_pos_set(Ng *ng);
 
 static int initialized = 0;
 
+int engage_log;
 E_Config_DD *ngi_conf_edd = NULL;
 E_Config_DD *ngi_conf_item_edd = NULL;
 E_Config_DD *ngi_conf_box_edd = NULL;
@@ -71,8 +72,8 @@ ngi_new(Config_Item *cfg)
    ng->state = unzoomed;
    ng->hide_state = show;
    ng->hide = EINA_TRUE;
-
-   ng->clip = evas_object_rectangle_add(ng->evas);
+   
+   ng->clip = evas_object_rectangle_add(ng->evas);   
    evas_object_color_set(ng->clip, 255, 255, 255, 255);
 
    ng->bg_clip = evas_object_rectangle_add(ng->evas);
@@ -1812,6 +1813,10 @@ e_modapi_init(E_Module *m)
 {
    char buf[4096];
    ngi_config = NULL;
+
+   engage_log = eina_log_domain_register("MOD:ENGAGE", EINA_COLOR_LIGHTBLUE);
+   eina_log_domain_level_set("MOD:ENGAGE", EINA_LOG_LEVEL_DBG);
+   INF("Initialized Engage Module");
 
    /* Location of message catalogs for localization */
    snprintf(buf, sizeof(buf), "%s/locale", e_module_dir_get(m));

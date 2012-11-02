@@ -23,6 +23,19 @@
 #define AUTOHIDE_FULLSCREEN	2
 #define AUTOHIDE_OVERLAP	3
 
+#undef DBG
+#undef INF
+#undef WRN
+#undef ERR
+#undef CRI
+#define DBG(...)            EINA_LOG_DOM_DBG(engage_log, __VA_ARGS__)
+#define INF(...)            EINA_LOG_DOM_INFO(engage_log, __VA_ARGS__)
+#define WRN(...)            EINA_LOG_DOM_WARN(engage_log, __VA_ARGS__)
+#define ERR(...)            EINA_LOG_DOM_ERR(engage_log, __VA_ARGS__)
+#define CRI(...)            EINA_LOG_DOM_CRIT(engage_log, __VA_ARGS__)
+extern int engage_log;
+
+
 typedef struct _Config             Config;
 typedef struct _Config_Item        Config_Item;
 typedef struct _Config_Box         Config_Box;
