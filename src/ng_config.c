@@ -308,11 +308,11 @@ _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cf
    ol = e_widget_list_add(evas, 0, 0); 
    of = e_widget_framelist_add(evas, D_("Stacking"), 0);
    rg = e_widget_radio_group_new(&cfdata->stacking);
-   ob = e_widget_radio_add(evas, D_("Above All"), ENGAGE_STACK_ABOVE_ALL, rg);
+   ob = e_widget_radio_add(evas, D_("Above All"), ENGAGE_ABOVE_ALL, rg);
    e_widget_framelist_object_append(of, ob);
-   ob = e_widget_radio_add(evas, D_("Below Fullscreen"), ENGAGE_STACK_BELOW_FULLSCREEN, rg);
+   ob = e_widget_radio_add(evas, D_("Below Fullscreen"), ENGAGE_BELOW_FULLSCREEN, rg);
    e_widget_framelist_object_append(of, ob);
-   ob = e_widget_radio_add(evas, D_("On Desktop"), ENGAGE_STACK_DESKTOP, rg);
+   ob = e_widget_radio_add(evas, D_("On Desktop"), ENGAGE_ON_DESKTOP, rg);
    e_widget_framelist_object_append(of, ob);
    e_widget_list_object_append(ol, of, 1, 0, 0.0); 
    

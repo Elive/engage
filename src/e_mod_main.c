@@ -198,7 +198,7 @@ ngi_new(Config_Item *cfg)
      {
 	ng->hide = _ngi_win_border_intersects(ng);
      }
-   else if (ng->cfg->stacking == ENGAGE_STACK_BELOW_FULLSCREEN)
+   else if (ng->cfg->stacking == ENGAGE_BELOW_FULLSCREEN)
      {
 	int fullscreen = e_desk_current_get(ng->zone)->fullscreen_borders;
 
@@ -294,7 +294,7 @@ _ngi_win_new(Ng *ng)
    win->popup = NULL;
    win->fake_iwin = NULL;
 
-  if (ngi_config->use_composite)
+  if ((ngi_config->use_composite) && (ng->cfg->stacking != ENGAGE_ON_DESKTOP))
      {
         DBG("composite");
         win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
@@ -328,20 +328,20 @@ _ngi_win_new(Ng *ng)
    
    switch (ng->cfg->stacking)
      {
-      case ENGAGE_STACK_BELOW_FULLSCREEN:
-         ERR("ENGAGE_STACK_BELOW_FULLSCREEN");
+      case ENGAGE_BELOW_FULLSCREEN:
+         ERR("ENGAGE_BELOW_FULLSCREEN");
 	 e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_ABOVE);
          e_container_window_raise(ng->zone->container, win->input, E_LAYER_ABOVE);
 	 break;
 
-      case ENGAGE_STACK_DESKTOP:
-         ERR("ENGAGE_STACK_DESKTOP");
+      case ENGAGE_ON_DESKTOP:
+         ERR("ENGAGE_ON_DESKTOP");
          e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_BELOW);
 	 e_container_window_raise(ng->zone->container, win->input, E_LAYER_BELOW);
 	 break;  
 
-      case ENGAGE_STACK_ABOVE_ALL:
-         ERR("ENGAGE_STACK_ABOVE_ALL");
+      case ENGAGE_ABOVE_ALL:
+         ERR("ENGAGE_ABOVE_ALL");
 	 e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_FULLSCREEN);
 	 e_container_window_raise(ng->zone->container, win->input, 999);
      }
@@ -1772,7 +1772,7 @@ _ngi_win_autohide_check(Ng *ng, E_Desk *desk)
    if (desk->zone != ng->zone)
      return;
 
-   if (ng->cfg->stacking == ENGAGE_STACK_BELOW_FULLSCREEN)
+   if (ng->cfg->stacking == ENGAGE_BELOW_FULLSCREEN)
      {
 	hide = desk->fullscreen_borders;
 
@@ -1926,7 +1926,7 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->hide_timeout = 0.1;
    cfg->zoomfactor = 2.0;
    cfg->alpha = 255;
-   cfg->stacking = ENGAGE_STACK_ABOVE_ALL;
+   cfg->stacking = ENGAGE_ABOVE_ALL;
    cfg->mouse_over_anim = 1;
    cfg->lock_deskswitch = 1;
    cfg->ecomorph_features = 0;

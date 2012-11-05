@@ -87,9 +87,9 @@ struct _Config_Item
   int            mouse_over_anim;
   enum 
     {
-       ENGAGE_STACK_ABOVE_ALL,
-       ENGAGE_STACK_BELOW_FULLSCREEN,
-       ENGAGE_STACK_DESKTOP
+       ENGAGE_ABOVE_ALL,
+       ENGAGE_BELOW_FULLSCREEN,
+       ENGAGE_ON_DESKTOP
     } stacking;
 
 
