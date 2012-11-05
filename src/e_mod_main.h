@@ -90,7 +90,7 @@ struct _Config_Item
        ENGAGE_ABOVE_ALL,
        ENGAGE_BELOW_FULLSCREEN,
        ENGAGE_ON_DESKTOP
-    } stacking;
+    } stacking, old_stacking;
 
 
   int            lock_deskswitch;

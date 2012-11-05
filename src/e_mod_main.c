@@ -294,9 +294,15 @@ _ngi_win_new(Ng *ng)
    win->popup = NULL;
    win->fake_iwin = NULL;
 
-  if ((ngi_config->use_composite) && (ng->cfg->stacking != ENGAGE_ON_DESKTOP))
+   if((ng->cfg->old_stacking != ng->cfg->stacking) && (ngi_config->use_composite))
      {
-        DBG("composite");
+        if(ng->cfg->stacking == ENGAGE_ON_DESKTOP)
+          ng->cfg->stacking = ng->cfg->old_stacking;
+     }
+
+   if ((ngi_config->use_composite) && (ng->cfg->stacking != ENGAGE_ON_DESKTOP))
+     {
+        DBG("Composite Mode");
         win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
 	ecore_evas_alpha_set(win->popup->ecore_evas, 1);
 	win->popup->evas_win = ecore_evas_software_x11_window_get(win->popup->ecore_evas);
@@ -306,7 +312,7 @@ _ngi_win_new(Ng *ng)
      }
    else
      {
-        DBG("no composite");
+        DBG("Desktop Mode");
         ng->evas = win->ng->zone->container->bg_evas;
 
         win->input = ecore_x_window_input_new(ng->zone->container->win, 0, 0, 1, 1);
@@ -325,23 +331,30 @@ _ngi_win_new(Ng *ng)
 
    e_drop_xdnd_register_set(win->input, 1);
    ecore_x_netwm_window_type_set(win->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
-   
+
+   if(!(ngi_config->use_composite) && (ng->cfg->stacking != ENGAGE_ON_DESKTOP))
+     {
+        INF("Detected no composite, will automatically switch to desktop mode");
+        ng->cfg->old_stacking = ng->cfg->stacking;
+        ng->cfg->stacking = ENGAGE_ON_DESKTOP;
+     }
+
    switch (ng->cfg->stacking)
      {
       case ENGAGE_BELOW_FULLSCREEN:
-         ERR("ENGAGE_BELOW_FULLSCREEN");
+         INF("ENGAGE_BELOW_FULLSCREEN");
 	 e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_ABOVE);
          e_container_window_raise(ng->zone->container, win->input, E_LAYER_ABOVE);
 	 break;
 
       case ENGAGE_ON_DESKTOP:
-         ERR("ENGAGE_ON_DESKTOP");
+         INF("ENGAGE_ON_DESKTOP");
          e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_BELOW);
 	 e_container_window_raise(ng->zone->container, win->input, E_LAYER_BELOW);
 	 break;  
 
       case ENGAGE_ABOVE_ALL:
-         ERR("ENGAGE_ABOVE_ALL");
+         INF("ENGAGE_ABOVE_ALL");
 	 e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_FULLSCREEN);
 	 e_container_window_raise(ng->zone->container, win->input, 999);
      }
@@ -1927,6 +1940,7 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->zoomfactor = 2.0;
    cfg->alpha = 255;
    cfg->stacking = ENGAGE_ABOVE_ALL;
+   cfg->old_stacking = cfg->stacking;
    cfg->mouse_over_anim = 1;
    cfg->lock_deskswitch = 1;
    cfg->ecomorph_features = 0;
@@ -2019,6 +2033,7 @@ e_modapi_init(E_Module *m)
    E_CONFIG_VAL(ngi_conf_item_edd, Config_Item, hide_below_windows, INT);
    E_CONFIG_VAL(ngi_conf_item_edd, Config_Item, alpha, INT);
    E_CONFIG_VAL(ngi_conf_item_edd, Config_Item, stacking, INT);
+   E_CONFIG_VAL(ngi_conf_item_edd, Config_Item, old_stacking, INT);
    E_CONFIG_VAL(ngi_conf_item_edd, Config_Item, mouse_over_anim, INT);
    E_CONFIG_VAL(ngi_conf_item_edd, Config_Item, lock_deskswitch, INT);
    E_CONFIG_VAL(ngi_conf_item_edd, Config_Item, ecomorph_features, INT);
