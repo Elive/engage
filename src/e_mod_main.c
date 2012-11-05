@@ -489,7 +489,7 @@ ngi_input_extents_calc(Ng *ng)
            win->rect.x = ng->win->popup->w - item_zoomed;
 
          if(ng->win->fake_iwin)
-           win->rect.x = ng->win->x - item_zoomed;
+           win->rect.x = ng->win->w - item_zoomed;
 
          win->rect.y = ng->start;
          win->rect.width = item_zoomed;
@@ -581,7 +581,7 @@ ngi_input_extents_calc(Ng *ng)
                 {
                    e_drop_handler_geometry_set
                       (box->drop_handler,
-                       ng->zone->x + win->popup->w - item_zoomed,		 
+                       ng->zone->x + win->w - item_zoomed,		 
                        ng->zone->y + box->pos,		 
                        item_zoomed, w);
                 }
@@ -1395,10 +1395,16 @@ ngi_reposition(Ng *ng)
 	      EINA_LIST_FOREACH(box->items, ll, it)
                 {
                    if(ng->win->popup)
-                     _ngi_netwm_icon_geometry_set(it->border, it->base.pos, (ng->win->popup->y + ng->win->popup->h) - size, size, size);
+                     _ngi_netwm_icon_geometry_set
+                        (it->border, it->base.pos, 
+                         (ng->win->popup->y + ng->win->popup->h) - size, 
+                         size, size);
 
                    if(ng->win->fake_iwin)
-                     _ngi_netwm_icon_geometry_set(it->border, it->base.pos, (ng->win->y + ng->win->h) - size, size, size);
+                     _ngi_netwm_icon_geometry_set
+                        (it->border, it->base.pos, 
+                         (ng->win->y + ng->win->h) - size, 
+                         size, size);
                 }
 	      break;
 
@@ -1420,10 +1426,16 @@ ngi_reposition(Ng *ng)
 	      EINA_LIST_FOREACH(box->items, ll, it)
                 {
                    if(ng->win->popup)
-                     _ngi_netwm_icon_geometry_set(it->border, (ng->win->popup->x + ng->win->popup->w) - size, it->base.pos, size, size);
+                     _ngi_netwm_icon_geometry_set
+                        (it->border, 
+                         (ng->win->popup->x + ng->win->popup->w) - size, 
+                         it->base.pos, size, size);
 
                    if(ng->win->fake_iwin)
-                     _ngi_netwm_icon_geometry_set(it->border, (ng->win->x + ng->win->w) - size, it->base.pos, size, size);
+                     _ngi_netwm_icon_geometry_set
+                        (it->border, 
+                         (ng->win->x + ng->win->w) - size, 
+                         it->base.pos, size, size);
                 }
 	      break;
 	  }
@@ -1871,8 +1883,11 @@ _ngi_composite_changes_cb(void *data)
              Config_Item *ci;
              Eina_List *l;
 
-             ecore_timer_del(composite_timer);
-             composite_timer = NULL;
+             if(composite_timer)
+               {
+                  ecore_timer_del(composite_timer);
+                  composite_timer = NULL;
+               }
 
              ecore_evas_shaped_set(ng->win->popup->ecore_evas, 0);
              e_popup_hide(ng->win->popup);
