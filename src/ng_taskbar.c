@@ -680,8 +680,17 @@ _item_cb_mouse_down(Ngi_Item *item, Ecore_Event_Mouse_Button *ev)
         int dir = E_MENU_POP_DIRECTION_AUTO;
         evas_object_geometry_get(item->obj, &x, &y, &w, &h);
 
-        x += ng->win->popup->x + ng->zone->x;
-        y += ng->win->popup->y + ng->zone->y;
+        if(ng->win->popup)
+          {
+             x += ng->win->popup->x + ng->zone->x;
+             y += ng->win->popup->y + ng->zone->y;
+          }
+
+        if(ng->win->fake_iwin)
+          {
+             x += ng->win->x + ng->zone->x;
+             y += ng->win->y + ng->zone->y;
+          }
 
         switch(ng->cfg->orient)
           {

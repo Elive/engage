@@ -139,7 +139,13 @@ _ngi_gadcon_item_new(Ngi_Box *box, Config_Gadcon *cg, Ngi_Item *after)
    e_gadcon_frame_request_callback_set(it->gadcon, _ngi_gadcon_cb_gadcon_frame_request, it);
    e_gadcon_orient(it->gadcon, ng->cfg->orient);
    e_gadcon_zone_set(it->gadcon, box->ng->zone);
-   e_gadcon_ecore_evas_set(it->gadcon, box->ng->win->popup->ecore_evas);
+   
+   if(box->ng->win->popup)
+     e_gadcon_ecore_evas_set(it->gadcon, box->ng->win->popup->ecore_evas);
+
+   if(box->ng->win->fake_iwin)
+     e_gadcon_ecore_evas_set(it->gadcon, box->ng->win->ecore_evas);
+
    e_gadcon_util_lock_func_set(it->gadcon, _ngi_gadcon_locked_set, ng);
 
    if (after)
@@ -164,7 +170,7 @@ _ngi_gadcon_item_new(Ngi_Box *box, Config_Gadcon *cg, Ngi_Item *after)
    evas_object_image_source_set(o, it->base.obj);
    evas_object_resize(o, 128, 128);
    evas_object_image_fill_set(o, 0,0,128,128);
-   e_icon_object_set(it->o_proxy, o);
+   e_icon_object_set(it->o_proxy, o); //FIXME: Deprecated API!
 
    edje_object_part_swallow(it->base.over, "e.swallow.content", it->o_proxy);
    evas_object_pass_events_set(it->o_proxy, 1);

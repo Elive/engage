@@ -60,6 +60,7 @@ struct _Config
   char          *theme_path;
 
   int            use_composite;
+  int            show_label;
   E_Config_Dialog *cfd;
   Eina_List       *handlers;
 };
@@ -84,8 +85,13 @@ struct _Config_Item
   float	         zoom_duration;
   int            alpha;
   int            mouse_over_anim;
+  enum 
+    {
+       ENGAGE_STACK_ABOVE_ALL,
+       ENGAGE_STACK_BELOW_FULLSCREEN,
+       ENGAGE_STACK_DESKTOP
+    } stacking;
 
-  enum { above_all, below_fullscreen } stacking;
 
   int            lock_deskswitch;
   int            ecomorph_features;
@@ -123,12 +129,17 @@ struct _Config_Gadcon
 
 struct _Ngi_Win
 {
-  Ng             *ng;
-  E_Popup        *popup;
-  Ecore_X_Window  input;
-  Ecore_X_Rectangle rect;
-  E_Win          *fake_iwin;
-  E_Object       *drop_win;
+  Ng                 *ng;
+  
+  int                x, y, w, h;
+  Ecore_Evas         *ecore_evas;
+  Ecore_X_Window     evas_win;
+
+  E_Popup            *popup;
+  Ecore_X_Window     input;
+  Ecore_X_Rectangle  rect;
+  E_Win              *fake_iwin;
+  E_Object           *drop_win;
 };
 
 
@@ -172,7 +183,7 @@ struct _Ng
   int              hide_step;
 
   int              w, h, start;
-  int              horizontal;
+  Eina_Bool        horizontal;
 
   int              mouse_in;
   int              show_bar;

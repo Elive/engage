@@ -51,7 +51,7 @@ ngi_launcher_new(Ng *ng, Config_Box *cfg)
    if (h) box->handlers = eina_list_append(box->handlers, h);
    h = ecore_event_handler_add(EFREET_EVENT_DESKTOP_CACHE_UPDATE, _cb_icons_update, box);
    if (h) box->handlers = eina_list_append(box->handlers, h);
-   
+  
    if (!cfg->launcher_app_dir || strlen(cfg->launcher_app_dir) == 0)
      return;
 
@@ -529,8 +529,17 @@ _item_cb_mouse_down(Ngi_Item *item, Ecore_Event_Mouse_Button *ev)
 
    evas_object_geometry_get(item->obj, &x, &y, &w, &h);
 
-   x += box->ng->win->popup->x + box->ng->zone->x;
-   y += box->ng->win->popup->y + box->ng->zone->y;
+   if(box->ng->win->popup)
+     {
+        x += box->ng->win->popup->x + box->ng->zone->x;
+        y += box->ng->win->popup->y + box->ng->zone->y;
+     }
+   
+   if(box->ng->win->fake_iwin)
+     {
+        x += box->ng->win->x + box->ng->zone->x;
+        y += box->ng->win->y + box->ng->zone->y;
+     }
 
    int dir = E_MENU_POP_DIRECTION_AUTO;
 

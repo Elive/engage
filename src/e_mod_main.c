@@ -84,6 +84,7 @@ ngi_new(Config_Item *cfg)
    ng->o_frame = edje_object_add(ng->evas);
    ng->o_label = edje_object_add(ng->evas);
    ng->es = e_shelf_zone_dummy_new(zone, ng->o_frame, eina_list_count(ngi_config->instances));
+   
    if (ng->es)
      {
         e_shelf_orient(ng->es, cfg->orient);
@@ -149,8 +150,10 @@ ngi_new(Config_Item *cfg)
    if (cfg->show_background)
      evas_object_show(ng->bg_clip);
 
+
    ngi_win_position_calc(ng->win);
-   e_popup_show(ng->win->popup);
+   if(ng->win->popup)
+     e_popup_show(ng->win->popup);
 
    EINA_LIST_FOREACH (cfg->boxes, l, cfg_box)
    {
@@ -195,7 +198,7 @@ ngi_new(Config_Item *cfg)
      {
 	ng->hide = _ngi_win_border_intersects(ng);
      }
-   else if (ng->cfg->stacking == below_fullscreen)
+   else if (ng->cfg->stacking == ENGAGE_STACK_BELOW_FULLSCREEN)
      {
 	int fullscreen = e_desk_current_get(ng->zone)->fullscreen_borders;
 
@@ -288,45 +291,60 @@ _ngi_win_new(Ng *ng)
    if (!win) return NULL;
 
    win->ng = ng;
-   win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
+   win->popup = NULL;
+   win->fake_iwin = NULL;
 
-   /* if ((evas = e_manager_comp_evas_get(ng->zone->container->manager)))
-    *   {
-    * 	e_canvas_del(win->popup->ecore_evas);
-    * 	ecore_evas_free(win->popup->ecore_evas); 
-    * 
-    * 	win->popup->ecore_evas = ecore_evas_e_comp_new(NULL, ng->zone->container->win,
-    * 						       ecore_evas_ecore_evas_get(evas),
-    * 						       0, 0, 1, 1);
-    * 	
-    * 	printf("USE COMP EVAS\n");
-    * 
-    *   }
-    * else */
-
-  if (ecore_x_screen_is_composited(ng->zone->container->manager->num))
+  if (ngi_config->use_composite)
      {
         DBG("composite");
+        win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
 	ecore_evas_alpha_set(win->popup->ecore_evas, 1);
 	win->popup->evas_win = ecore_evas_software_x11_window_get(win->popup->ecore_evas);
 	win->input = win->popup->evas_win;
 	win->drop_win = E_OBJECT(win->popup);
+        ng->evas = win->popup->evas;
      }
    else
      {
         DBG("no composite");
-	ecore_evas_shaped_set(win->popup->ecore_evas, 1);
-	win->fake_iwin = E_OBJECT_ALLOC(E_Win, E_WIN_TYPE, NULL);
-	win->fake_iwin->evas_win = ecore_evas_software_x11_window_get(win->popup->ecore_evas);
-        win->input = win->fake_iwin->evas_win;
-	win->drop_win = E_OBJECT(win->popup);
+        ng->evas = win->ng->zone->container->bg_evas;
+
+        win->input = ecore_x_window_input_new(ng->zone->container->win, 0, 0, 1, 1);
+        ecore_x_window_show(win->input);
+        e_drop_xdnd_register_set(win->input, 1);
+
+   
+        win->fake_iwin = E_OBJECT_ALLOC(E_Win, E_WIN_TYPE, NULL);
+        win->fake_iwin->x = 0;
+        win->fake_iwin->y = 0;
+        win->fake_iwin->w = 1;
+        win->fake_iwin->h = 1;
+        win->fake_iwin->evas_win = win->input;
+        win->drop_win = E_OBJECT(win->fake_iwin);
      }
 
-   ecore_x_netwm_window_type_set(win->popup->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
-   ng->evas = win->popup->evas;
-
    e_drop_xdnd_register_set(win->input, 1);
-   e_container_window_raise(ng->zone->container, win->input, 999);
+   ecore_x_netwm_window_type_set(win->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
+   
+   switch (ng->cfg->stacking)
+     {
+      case ENGAGE_STACK_BELOW_FULLSCREEN:
+         ERR("ENGAGE_STACK_BELOW_FULLSCREEN");
+	 e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_ABOVE);
+         e_container_window_raise(ng->zone->container, win->input, E_LAYER_ABOVE);
+	 break;
+
+      case ENGAGE_STACK_DESKTOP:
+         ERR("ENGAGE_STACK_DESKTOP");
+         e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_BELOW);
+	 e_container_window_raise(ng->zone->container, win->input, E_LAYER_BELOW);
+	 break;  
+
+      case ENGAGE_STACK_ABOVE_ALL:
+         ERR("ENGAGE_STACK_ABOVE_ALL");
+	 e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_FULLSCREEN);
+	 e_container_window_raise(ng->zone->container, win->input, 999);
+     }
 
    return win;
 }
@@ -335,7 +353,7 @@ static int
 _ngi_win_free(Ngi_Win *win)
 {
    e_drop_xdnd_register_set(win->input, 0);
-   e_object_del(E_OBJECT(win->popup));
+   //e_object_del(E_OBJECT(win->popup));
 
    if (win->fake_iwin)
      {
@@ -409,11 +427,18 @@ ngi_input_extents_calc(Ng *ng)
    else
      item_zoomed = ng->size + ng->opt.bg_offset + ng->opt.edge_offset;
 
+   int extra = ng->size;
+   
    switch (ng->cfg->orient)
      {
       case E_GADCON_ORIENT_BOTTOM:
          win->rect.x = ng->start;
-         win->rect.y = ng->win->popup->h - item_zoomed;
+         if(ng->win->popup)
+           win->rect.y = ng->win->popup->h - item_zoomed;
+
+         if(ng->win->fake_iwin)
+           win->rect.y = ng->win->h - item_zoomed;
+
          win->rect.width = ng->w;
          win->rect.height = item_zoomed;
          break;
@@ -430,28 +455,42 @@ ngi_input_extents_calc(Ng *ng)
          win->rect.y = ng->start;
          win->rect.width = item_zoomed;
          win->rect.height = ng->w;
+
          break;
 
       case E_GADCON_ORIENT_RIGHT:
-         win->rect.x = ng->win->popup->w - item_zoomed;
+         if(ng->win->popup)
+           win->rect.x = ng->win->popup->w - item_zoomed;
+
+         if(ng->win->fake_iwin)
+           win->rect.x = ng->win->x - item_zoomed;
+
          win->rect.y = ng->start;
          win->rect.width = item_zoomed;
          win->rect.height = ng->w;
          break;
      }
 
-   e_container_window_raise(ng->zone->container, win->input, 999);
+   //e_container_window_raise(ng->zone->container, win->input, 999);//FIXME: not sure if this is still needed
 
-   if (ngi_config->use_composite)
+   if ((ngi_config->use_composite) && (ng->win->popup)) 
      {
 	ecore_x_window_shape_input_rectangles_set(win->input, &win->rect, 1);
      }
    else
      {
-	ecore_x_window_move_resize(win->input,
+        if(ng->win->popup)
+          ecore_x_window_move_resize(win->input,
 				   ng->zone->x + win->popup->x + win->rect.x,
 				   ng->zone->y + win->popup->y + win->rect.y,
 				   win->rect.width, win->rect.height);
+
+        if(ng->win->fake_iwin)
+          ecore_x_window_move_resize(win->input,
+			      ng->zone->x + win->x + win->rect.x,
+			      ng->zone->y + win->y + win->rect.y,
+			      win->rect.width, win->rect.height);
+
      }
 
    EINA_LIST_FOREACH (ng->boxes, l, box)
@@ -466,11 +505,24 @@ ngi_input_extents_calc(Ng *ng)
 	switch (ng->cfg->orient)
 	  {
 	   case E_GADCON_ORIENT_BOTTOM:
-	      e_drop_handler_geometry_set
-		(box->drop_handler,
-		 ng->zone->x + box->pos,
-		 ng->zone->y + win->popup->h - item_zoomed,
-		 w, item_zoomed);
+              if(ng->win->popup)
+                {
+                   e_drop_handler_geometry_set
+                      (box->drop_handler,
+                       ng->zone->x + box->pos,
+                       ng->zone->y + win->popup->h - item_zoomed,
+                       w, item_zoomed);
+                }
+              
+              if(ng->win->fake_iwin)
+                {
+                   e_drop_handler_geometry_set
+                      (box->drop_handler,
+                       ng->zone->x + box->pos,
+                       ng->zone->y + win->h - item_zoomed,
+                       w, item_zoomed);
+                }
+
 	      break;
 
 	   case E_GADCON_ORIENT_TOP:
@@ -490,11 +542,24 @@ ngi_input_extents_calc(Ng *ng)
 	      break;
 
 	   case E_GADCON_ORIENT_RIGHT:
-	      e_drop_handler_geometry_set
-		(box->drop_handler,
-		 ng->zone->x + win->popup->w - item_zoomed,
-		 ng->zone->y + box->pos,
-		 item_zoomed, w);
+              if(ng->win->popup)
+                {
+                   e_drop_handler_geometry_set
+                      (box->drop_handler,
+                       ng->zone->x + win->popup->w - item_zoomed,		 
+                       ng->zone->y + box->pos,		 
+                       item_zoomed, w);
+                }
+              
+              if(ng->win->fake_iwin)
+                {
+                   e_drop_handler_geometry_set
+                      (box->drop_handler,
+                       ng->zone->x + win->popup->w - item_zoomed,		 
+                       ng->zone->y + box->pos,		 
+                       item_zoomed, w);
+                }
+
 	      break;
 	  }
      }
@@ -508,45 +573,103 @@ ngi_win_position_calc(Ngi_Win *win)
    E_Gadcon_Orient orient = (E_Gadcon_Orient)ng->cfg->orient;
    int size = WINDOW_HEIGHT;
 
+   DBG("brefore_position_calc : x:%d y:%d w:%d h:%d", 
+       win->x, win->y, win->w, win->h);
+
+   if(win->popup)
+     DBG("POPUP:brefore_position_calc : x:%d y:%d w:%d h:%d", 
+         win->popup->x, win->popup->y, win->popup->w, win->popup->h);
+
    switch (orient)
      {
       case E_GADCON_ORIENT_LEFT:
-	 e_popup_move_resize(win->popup, 0, 0, size, ng->zone->h);
-         ng->horizontal = 0;
-         break;
+         if(win->popup)
+            e_popup_move_resize(win->popup, 0, 0, size, ng->zone->h);
+         
+         if(win->fake_iwin)
+           {
+              win->w = size;
+              win->h = ng->zone->h;
+           }
+	 ng->horizontal = EINA_FALSE;
+	 break;
 
       case E_GADCON_ORIENT_RIGHT:
-	 e_popup_move_resize(win->popup, ng->zone->w - size, 0, size, ng->zone->h);
-         ng->horizontal = 0;
-         break;
+
+         if(win->popup)
+            e_popup_move_resize(win->popup, ng->zone->w - size, 0, size, ng->zone->h);
+         
+         if(win->fake_iwin)
+           {
+              win->h = ng->zone->h;
+              win->w = ng->zone->w;
+           }
+	 ng->horizontal = EINA_FALSE;
+	 break;
 
       case E_GADCON_ORIENT_TOP:
-	 e_popup_move_resize(win->popup, 0, 0, ng->zone->w, size);
-         ng->horizontal = 1;
-         break;
+
+         if(win->popup)
+            e_popup_move_resize(win->popup, 0, 0, ng->zone->w, size);
+         
+         if(win->fake_iwin)
+           {
+              win->w = ng->zone->w;
+              win->h = size;
+           }
+	 ng->horizontal = EINA_TRUE;
+	 break;
 
       case E_GADCON_ORIENT_BOTTOM:
-	 e_popup_move_resize(win->popup, 0, ng->zone->h - size, ng->zone->w, size);
-         ng->horizontal = 1;
-         break;
+         if(win->popup)
+            e_popup_move_resize(win->popup, 0, ng->zone->h - size, ng->zone->w, size);
+         
+         if(win->fake_iwin)
+           {
+              win->w = ng->zone->w;
+              win->h = ng->zone->h;
+           }
+	 
+         ng->horizontal = EINA_TRUE;
+	 break;
 
       default:
-         break;
+	 break;
      }
+
+   DBG("after_position_calc : x:%d y:%d w:%d h:%d", 
+       win->x, win->y, win->w, win->h);
+
+   if(win->popup)
+     DBG("POPUP:after_position_calc : x:%d y:%d w:%d h:%d", 
+         win->popup->x, win->popup->y, win->popup->w, win->popup->h);
+
 
    if (win->fake_iwin)
      {
-	win->fake_iwin->x = win->popup->x;
-	win->fake_iwin->y = win->popup->y;
-	win->fake_iwin->w = win->popup->w;
-	win->fake_iwin->h = win->popup->h;
+	win->fake_iwin->x = win->x;
+	win->fake_iwin->y = win->y;
+	win->fake_iwin->w = win->w;
+	win->fake_iwin->h = win->h;
      }
-
-   evas_object_move(ng->clip, 0, win->popup->h - ng->opt.edge_offset);
-   evas_object_resize(ng->clip, win->popup->w, ng->opt.edge_offset - ng->opt.reflection_offset);
-
-   evas_object_move(ng->bg_clip, 0, 0);
-   evas_object_resize(ng->bg_clip, win->popup->w, win->popup->h);
+ 
+   if(win->popup)
+     {
+        evas_object_move(ng->clip, 0, win->popup->h - ng->opt.edge_offset);
+        evas_object_resize(ng->clip, win->popup->w, ng->opt.edge_offset - ng->opt.reflection_offset);
+        
+        evas_object_move(ng->bg_clip, 0, 0);
+        evas_object_resize(ng->bg_clip, win->popup->w, win->popup->h);
+     }
+   
+   if(win->fake_iwin)
+     {
+        evas_object_move(ng->clip, 0, win->h - ng->opt.edge_offset);
+        evas_object_resize(ng->clip, win->w, ng->opt.edge_offset - ng->opt.reflection_offset);
+        
+        evas_object_move(ng->bg_clip, 0, 0);
+        evas_object_resize(ng->bg_clip, win->w, win->h);
+     }
 }
 
 static Eina_Bool
@@ -597,6 +720,7 @@ _ngi_win_cb_mouse_in(void *data, int type, void *event)
       (ev->root.y - ng->zone->y);
 
    ngi_mouse_in(ng);
+
 
    if (!ngi_config->use_composite)
      evas_event_feed_mouse_in(ng->evas, ev->time, NULL);
@@ -1164,7 +1288,13 @@ ngi_reposition(Ng *ng)
    Ngi_Item *it;
    int size = ng->size;
    int cnt = 0, end;
-   int width = ng->horizontal ? ng->win->popup->w : ng->win->popup->h;
+   int width = 0;
+
+   if(ng->win->popup)
+      width = ng->horizontal ? ng->win->popup->w : ng->win->popup->h;
+
+   if(ng->win->fake_iwin)
+      width = ng->horizontal ? ng->win->w : ng->win->h;
 
    for (;;)
      {
@@ -1237,9 +1367,13 @@ ngi_reposition(Ng *ng)
 	  {
 	   case E_GADCON_ORIENT_BOTTOM:
 	      EINA_LIST_FOREACH(box->items, ll, it)
-		_ngi_netwm_icon_geometry_set
-		(it->border, it->base.pos,
-		 (ng->win->popup->y + ng->win->popup->h) - size, size, size);
+                {
+                   if(ng->win->popup)
+                     _ngi_netwm_icon_geometry_set(it->border, it->base.pos, (ng->win->popup->y + ng->win->popup->h) - size, size, size);
+
+                   if(ng->win->fake_iwin)
+                     _ngi_netwm_icon_geometry_set(it->border, it->base.pos, (ng->win->y + ng->win->h) - size, size, size);
+                }
 	      break;
 
 	   case E_GADCON_ORIENT_TOP:
@@ -1258,9 +1392,13 @@ ngi_reposition(Ng *ng)
 
 	   case E_GADCON_ORIENT_RIGHT:
 	      EINA_LIST_FOREACH(box->items, ll, it)
-		_ngi_netwm_icon_geometry_set
-		(it->border, (ng->win->popup->x + ng->win->popup->w) - size,
-		 it->base.pos, size, size);
+                {
+                   if(ng->win->popup)
+                     _ngi_netwm_icon_geometry_set(it->border, (ng->win->popup->x + ng->win->popup->w) - size, it->base.pos, size, size);
+
+                   if(ng->win->fake_iwin)
+                     _ngi_netwm_icon_geometry_set(it->border, (ng->win->x + ng->win->w) - size, it->base.pos, size, size);
+                }
 	      break;
 	  }
      }
@@ -1309,8 +1447,11 @@ _ngi_label_pos_set(Ng *ng)
    switch (ng->cfg->orient)
      {
       case E_GADCON_ORIENT_BOTTOM:
-	 evas_object_move(ng->o_label, ng->item_active->pos + ng->size/2,
-			  (ng->win->popup->h + ng->hide_step) - off);
+         if(ng->win->popup)
+           evas_object_move(ng->o_label, ng->item_active->pos + ng->size/2, (ng->win->popup->h + ng->hide_step) - off);
+
+         if(ng->win->fake_iwin)
+           evas_object_move(ng->o_label, ng->item_active->pos + ng->size/2, (ng->win->h + ng->hide_step) - off);
 	 break;
 
       case E_GADCON_ORIENT_TOP:
@@ -1318,8 +1459,12 @@ _ngi_label_pos_set(Ng *ng)
 			  (off - ng->hide_step));
 	 break;
       case E_GADCON_ORIENT_RIGHT:
-	 evas_object_move(ng->o_label, (ng->win->popup->w + ng->hide_step) - off,
-			  ng->item_active->pos + ng->size/2);
+
+         if(ng->win->popup)
+           evas_object_move(ng->o_label, (ng->win->popup->w + ng->hide_step) - off, ng->item_active->pos + ng->size/2);
+
+         if(ng->win->fake_iwin)
+           evas_object_move(ng->o_label, (ng->win->w + ng->hide_step) - off, ng->item_active->pos + ng->size/2);
 	 break;
 
       case E_GADCON_ORIENT_LEFT:
@@ -1339,6 +1484,7 @@ _ngi_redraw(Ng *ng)
    double pos, pos2;
    int end1, end2, size_spacing, hide_step;
    int bw, bh, bx, by;
+   int w, h;
 
    Config_Item *cfg = ng->cfg;
 
@@ -1348,8 +1494,17 @@ _ngi_redraw(Ng *ng)
    int cnt = 0;
    /* double disp = 0.0; */
 
-   int w = ng->win->popup->w;
-   int h = ng->win->popup->h;
+   if(ng->win->popup)
+     {
+        w = ng->win->popup->w;
+        h = ng->win->popup->h;
+     }
+
+   if(ng->win->fake_iwin)
+     {
+        w = ng->win->w;
+        h = ng->win->h;
+     }
 
    if (cfg->autohide)
      hide_step = ng->hide_step;
@@ -1536,7 +1691,12 @@ _ngi_win_border_intersects(Ng *ng)
      {
       case E_GADCON_ORIENT_BOTTOM:
 	 x = ng->start;
-	 y = ng->win->popup->h - size;
+         if(ng->win->popup)
+           y = ng->win->popup->h - size;
+
+         if(ng->win->fake_iwin)
+           y = ng->win->h - size;
+
 	 w = ng->w;
 	 h = size;
 	 break;
@@ -1556,15 +1716,29 @@ _ngi_win_border_intersects(Ng *ng)
 	 break;
 
       case E_GADCON_ORIENT_RIGHT:
-	 x = ng->win->popup->w - size;
+         if(ng->win->popup)
+           x = ng->win->popup->w - size;
+
+         if(ng->win->fake_iwin)
+           x = ng->win->w - size;
+
 	 y = ng->start;
 	 w = size;
 	 h = ng->w;
 	 break;
      }
 
-   x += ng->zone->x + ng->win->popup->x;
-   y += ng->zone->y + ng->win->popup->y;
+   if(ng->win->popup)
+     {
+        x += ng->zone->x + ng->win->popup->x;
+        y += ng->zone->y + ng->win->popup->y;
+     }
+
+   if(ng->win->fake_iwin)
+     {
+        x += ng->zone->x + ng->win->x;
+        y += ng->zone->y + ng->win->y;
+     }
 
    EINA_LIST_FOREACH(e_border_client_list(), l, bd)
      {
@@ -1598,14 +1772,17 @@ _ngi_win_autohide_check(Ng *ng, E_Desk *desk)
    if (desk->zone != ng->zone)
      return;
 
-   if (ng->cfg->stacking == below_fullscreen)
+   if (ng->cfg->stacking == ENGAGE_STACK_BELOW_FULLSCREEN)
      {
 	hide = desk->fullscreen_borders;
 
-	if (hide)
-	  e_popup_hide(ng->win->popup);
-	else
-	  e_popup_show(ng->win->popup);
+	if(ng->win->popup)
+          {
+             if (hide)
+               e_popup_hide(ng->win->popup);
+             else
+               e_popup_show(ng->win->popup);
+          }
      }
 
    if (ng->cfg->autohide == AUTOHIDE_FULLSCREEN)
@@ -1665,8 +1842,8 @@ _ngi_init_timer_cb(void *data)
    Eina_List *l;
    Config_Item *ci;
    E_Config_Module *em;
-   
-   if ((e_config->use_composite) || ecore_x_screen_is_composited(0))
+
+   if (ecore_x_screen_is_composited(e_manager_current_get()->num))
      ngi_config->use_composite = EINA_TRUE;
 
    EINA_LIST_FOREACH (ngi_config->items, l, ci)
@@ -1749,7 +1926,7 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->hide_timeout = 0.1;
    cfg->zoomfactor = 2.0;
    cfg->alpha = 255;
-   cfg->stacking = above_all;
+   cfg->stacking = ENGAGE_STACK_ABOVE_ALL;
    cfg->mouse_over_anim = 1;
    cfg->lock_deskswitch = 1;
    cfg->ecomorph_features = 0;
@@ -1799,7 +1976,7 @@ ngi_bar_config_new(int container_num, int zone_num)
 EAPI void *
 e_modapi_init(E_Module *m)
 {
-   char buf[4096];
+   char buf[PATH_MAX];
    ngi_config = NULL;
 
    engage_log = eina_log_domain_register("MOD:ENGAGE", EINA_COLOR_LIGHTBLUE);
