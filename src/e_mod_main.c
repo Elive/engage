@@ -36,7 +36,7 @@ static void           _ngi_label_pos_set(Ng *ng);
 static int initialized = 0;
 
 static Eina_Bool shaped = EINA_FALSE;
-static Ecore_Timer *composite_timer;
+static Ecore_Timer *composite_timer = NULL;
 
 int engage_log;
 E_Config_DD *ngi_conf_edd = NULL;
@@ -223,8 +223,8 @@ ngi_new(Config_Item *cfg)
 
    ngi_thaw(ng);
 
-   if(ng->win->popup)
-    composite_timer = ecore_timer_add(0.15, _ngi_composite_changes_cb, ng);
+   if((ng->win->popup) && (ngi_config->use_composite))
+    composite_timer = ecore_timer_add(0.35, _ngi_composite_changes_cb, ng);
 
    return ng;
 }
@@ -251,6 +251,8 @@ ngi_free(Ng *ng)
    if (ng->animator)
       ecore_animator_del(ng->animator);
 
+   
+   
    if (ng->menu_wait_timer)
       ecore_timer_del(ng->menu_wait_timer);
 
@@ -1869,15 +1871,21 @@ _ngi_composite_changes_cb(void *data)
              Config_Item *ci;
              Eina_List *l;
 
-             ecore_evas_shaped_set(ng->win->popup->ecore_evas, 0);
-             ngi_free(ng);
+             ecore_timer_del(composite_timer);
+             composite_timer = NULL;
 
-             if(composite_timer)
-               ecore_timer_del(composite_timer);
-             
+             ecore_evas_shaped_set(ng->win->popup->ecore_evas, 0);
+             e_popup_hide(ng->win->popup);
+
+             EINA_LIST_FOREACH (ngi_config->items, l, ci)
+                ngi_free(ci->ng);
+
              EINA_LIST_FOREACH (ngi_config->items, l, ci)
                 ngi_new(ci);
+
              shaped = EINA_FALSE;
+
+             return ECORE_CALLBACK_DONE;
           }
           
         return ECORE_CALLBACK_PASS_ON;
@@ -1886,7 +1894,11 @@ _ngi_composite_changes_cb(void *data)
      {
         if(!shaped)
           {
-             ecore_evas_shaped_set(ng->win->popup->ecore_evas, 1);
+             Config_Item *ci;
+             Eina_List *l;
+
+             EINA_LIST_FOREACH (ngi_config->items, l, ci)
+                ecore_evas_shaped_set(ci->ng->win->popup->ecore_evas, 1);
              shaped = EINA_TRUE;
           }
 
@@ -2153,6 +2165,9 @@ e_modapi_shutdown(E_Module *m)
    Ecore_Event_Handler *h;
    Ng *ng;
    Eina_List *l, *ll;
+
+   if (ngi_config->use_composite == EINA_TRUE)
+        ecore_timer_del(composite_timer);
 
    if (maug)
      {
