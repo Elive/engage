@@ -20,6 +20,8 @@ static Eina_Bool      _ngi_win_cb_mouse_wheel(void *data, int type, void *event)
 static Eina_Bool      _ngi_win_cb_desk_show(void *data, int type, void *event);
 static Eina_Bool      _ngi_win_cb_border_event(void *data, int type, void *event);
 
+static Eina_Bool      _ngi_composite_changes_cb(void *data);
+
 static void           _ngi_zoom_in(Ng *ng);
 static void           _ngi_zoom_out(Ng *ng);
 static void           _ngi_item_appear(Ng *ng, Ngi_Item *it);
@@ -32,6 +34,9 @@ static Eina_Bool      _ngi_win_border_intersects(Ng *ng);
 static void           _ngi_label_pos_set(Ng *ng);
 
 static int initialized = 0;
+
+static Eina_Bool shaped = EINA_FALSE;
+static Ecore_Timer *composite_timer;
 
 int engage_log;
 E_Config_DD *ngi_conf_edd = NULL;
@@ -65,7 +70,8 @@ ngi_new(Config_Item *cfg)
 
    ng->zone = zone;
    ng->win = _ngi_win_new(ng);
-
+   
+  
    ng->zoom = 1.0;
    ng->size = ng->cfg->size;
 
@@ -217,6 +223,9 @@ ngi_new(Config_Item *cfg)
 
    ngi_thaw(ng);
 
+   if(ng->win->popup)
+    composite_timer = ecore_timer_add(0.15, _ngi_composite_changes_cb, ng);
+
    return ng;
 }
 
@@ -309,6 +318,7 @@ _ngi_win_new(Ng *ng)
 	win->input = win->popup->evas_win;
 	win->drop_win = E_OBJECT(win->popup);
         ng->evas = win->popup->evas;
+
      }
    else
      {
@@ -1845,6 +1855,47 @@ _ngi_win_cb_border_event(void *data, int type, void *event)
    return EINA_TRUE;
 }
 
+static Eina_Bool
+_ngi_composite_changes_cb(void *data)
+{
+   Ng *ng;
+   
+   if(!(ng = data)) return ECORE_CALLBACK_PASS_ON;
+
+   if(ecore_x_screen_is_composited(e_manager_current_get()->num))
+     {
+        if(shaped)
+          {
+             Config_Item *ci;
+             Eina_List *l;
+
+             ecore_evas_shaped_set(ng->win->popup->ecore_evas, 0);
+             ngi_free(ng);
+
+             if(composite_timer)
+               ecore_timer_del(composite_timer);
+             
+             EINA_LIST_FOREACH (ngi_config->items, l, ci)
+                ngi_new(ci);
+             shaped = EINA_FALSE;
+          }
+          
+        return ECORE_CALLBACK_PASS_ON;
+     }
+   else
+     {
+        if(!shaped)
+          {
+             ecore_evas_shaped_set(ng->win->popup->ecore_evas, 1);
+             shaped = EINA_TRUE;
+          }
+
+        return ECORE_CALLBACK_PASS_ON;
+     }
+   return ECORE_CALLBACK_RENEW;
+}
+
+   
 
 /***************************************************************************/
 
