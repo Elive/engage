@@ -366,7 +366,8 @@ static int
 _ngi_win_free(Ngi_Win *win)
 {
    e_drop_xdnd_register_set(win->input, 0);
-   //e_object_del(E_OBJECT(win->popup));
+   if(win->popup)
+     e_object_del(E_OBJECT(win->popup));
 
    if (win->fake_iwin)
      {
