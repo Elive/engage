@@ -33,10 +33,14 @@ static int            _ngi_autohide(Ng *ng, int hide);
 static Eina_Bool      _ngi_win_border_intersects(Ng *ng);
 static void           _ngi_label_pos_set(Ng *ng);
 
+static Eina_Bool      _ngi_hack(void *data);
+
 static int initialized = 0;
 
 static Eina_Bool shaped = EINA_FALSE;
 static Ecore_Timer *composite_timer = NULL;
+static Ecore_Timer *force_timer = NULL;
+int mouse_out_hack = 0;
 
 int engage_log;
 E_Config_DD *ngi_conf_edd = NULL;
@@ -214,17 +218,29 @@ ngi_new(Config_Item *cfg)
 	  e_popup_show(ng->win->popup);
      }
 
+   if(ngi_config->use_force)
+     e_popup_show(ng->win->popup);
+
    if (ng->cfg->autohide && ng->hide)
      {
 	ng->hide = EINA_TRUE;
         ng->hide_step = ng->size + ng->opt.edge_offset + ng->opt.bg_offset;
         ng->hide_state = hidden;
+
+        if(ngi_config->use_force)
+          {
+             ng->hide = EINA_FALSE;
+             ng->hide_state = showing;
+          }
      }
 
    ngi_thaw(ng);
 
-   if((ng->win->popup) && (ngi_config->use_composite))
-    composite_timer = ecore_timer_add(0.35, _ngi_composite_changes_cb, ng);
+   if((ng->win->popup) && (ecore_x_screen_is_composited(e_manager_current_get()->num)))
+     composite_timer = ecore_timer_add(0.35, _ngi_composite_changes_cb, ng);
+
+   if(!ecore_x_screen_is_composited(e_manager_current_get()->num))
+     force_timer = ecore_timer_add(0.15, _ngi_hack, ng);
 
    return ng;
 }
@@ -311,7 +327,8 @@ _ngi_win_new(Ng *ng)
           ng->cfg->stacking = ng->cfg->old_stacking;
      }
 
-   if ((ngi_config->use_composite) && (ng->cfg->stacking != ENGAGE_ON_DESKTOP))
+   if (((ngi_config->use_composite) && (ng->cfg->stacking != ENGAGE_ON_DESKTOP)) ||
+       (ngi_config->use_force))
      {
         DBG("Composite Mode");
         win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
@@ -321,6 +338,11 @@ _ngi_win_new(Ng *ng)
 	win->drop_win = E_OBJECT(win->popup);
         ng->evas = win->popup->evas;
 
+        if(ngi_config->use_force)
+          {
+             ecore_evas_shaped_set(win->popup->ecore_evas, 1);
+             ng->cfg->stacking = ENGAGE_ABOVE_ALL;
+          }
      }
    else
      {
@@ -349,6 +371,9 @@ _ngi_win_new(Ng *ng)
         INF("Detected no composite, will automatically switch to desktop mode");
         ng->cfg->old_stacking = ng->cfg->stacking;
         ng->cfg->stacking = ENGAGE_ON_DESKTOP;
+
+        if(ngi_config->use_force)
+          ng->cfg->stacking = ENGAGE_ABOVE_ALL;
      }
 
    switch (ng->cfg->stacking)
@@ -371,6 +396,8 @@ _ngi_win_new(Ng *ng)
 	 e_container_window_raise(ng->zone->container, win->input, 999);
      }
 
+   if(ngi_config->use_force)
+     ngi_config->use_composite = EINA_TRUE;
    return win;
 }
 
@@ -781,7 +808,18 @@ _ngi_win_cb_mouse_out(void *data, int type, void *event)
    if (ev->win != ng->win->input)
       return EINA_TRUE;
 
+   DBG("mouse out");
    ngi_mouse_out(ng);
+
+   if (ngi_config->use_force)
+     {
+        mouse_out_hack +=1;
+        if (mouse_out_hack >1)
+          {
+             ng->hide = EINA_TRUE;
+             mouse_out_hack = 0;
+          } 
+     }
 
    if (!ngi_config->use_composite)
      evas_event_feed_mouse_out(ng->evas, ev->time, NULL);
@@ -1881,6 +1919,7 @@ _ngi_composite_changes_cb(void *data)
    Ng *ng;
    
    if(!(ng = data)) return ECORE_CALLBACK_PASS_ON;
+   if(ngi_config->use_force) return ECORE_CALLBACK_PASS_ON;
 
    if(ecore_x_screen_is_composited(e_manager_current_get()->num))
      {
@@ -1928,6 +1967,79 @@ _ngi_composite_changes_cb(void *data)
    return ECORE_CALLBACK_RENEW;
 }
 
+static Eina_Bool
+_ngi_hack(void *data)
+{
+   Ng *ng;
+
+   if(!(ng = data)) return ECORE_CALLBACK_PASS_ON;
+
+   if((ng->cfg->stacking == ENGAGE_ON_DESKTOP) &&
+      (ng->cfg->autohide == AUTOHIDE_OVERLAP))
+     {
+        if(_ngi_win_border_intersects(ng))
+          {
+             if(ng->hide_state == showing || ng->hide_state == show)
+               {
+                  Eina_List *l;
+                  Config_Item *ci;
+                  DBG("showing engage");
+                  
+                  if(force_timer)
+                    {
+                       ecore_timer_del(force_timer);
+                       force_timer = NULL;
+                    }
+
+                  EINA_LIST_FOREACH(ngi_config->items, l, ci)
+                    {
+                       ngi_free(ci->ng);
+
+                       ngi_config->use_force = EINA_TRUE;
+                       ngi_config->unset_force = EINA_FALSE;
+                       ngi_new(ci);
+                    }
+
+                  return ECORE_CALLBACK_DONE;
+               }
+          }
+     }
+   
+   if (!ecore_x_screen_is_composited(e_manager_current_get()->num))
+     {
+        if ((ng->cfg->stacking != ENGAGE_ON_DESKTOP) && 
+            (ng->cfg->autohide == AUTOHIDE_OVERLAP))
+          {
+             if ((!_ngi_win_border_intersects(ng) && !(ngi_config->unset_force)) ||
+                  ng->hide_state == hidden)
+               {
+                  Eina_List *l;
+                  Config_Item *ci;
+                  DBG("none intersect, so we should reset engage on desktop");
+                  
+                  if(force_timer)
+                    {
+                       ecore_timer_del(force_timer);
+                       force_timer = NULL;
+                    }
+
+                  EINA_LIST_FOREACH(ngi_config->items, l, ci)
+                    {
+                       ngi_free(ci->ng);
+
+                       ngi_config->use_force = EINA_FALSE;
+                       ngi_config->unset_force = EINA_TRUE;
+                       ngi_config->use_composite = EINA_FALSE;
+                       ngi_new(ci);
+                    }
+
+                  return ECORE_CALLBACK_DONE;
+               }
+          }
+     }
+
+   return ECORE_CALLBACK_PASS_ON;
+}
    
 
 /***************************************************************************/
@@ -2187,8 +2299,11 @@ e_modapi_shutdown(E_Module *m)
    Ng *ng;
    Eina_List *l, *ll;
 
-   if (ngi_config->use_composite == EINA_TRUE)
-        ecore_timer_del(composite_timer);
+   if (composite_timer)
+     ecore_timer_del(composite_timer);
+
+   if (force_timer)
+     ecore_timer_del(force_timer); 
 
    if (maug)
      {

@@ -60,6 +60,10 @@ struct _Config
   char          *theme_path;
 
   int            use_composite;
+  
+  int            use_force;
+  int            unset_force;
+
   int            show_label;
   E_Config_Dialog *cfd;
   Eina_List       *handlers;
