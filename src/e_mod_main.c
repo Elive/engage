@@ -38,8 +38,6 @@ static Eina_Bool      _ngi_hack(void *data);
 static int initialized = 0;
 
 static Eina_Bool shaped = EINA_FALSE;
-static Ecore_Timer *composite_timer = NULL;
-static Ecore_Timer *force_timer = NULL;
 int mouse_out_hack = 0;
 
 int engage_log;
@@ -237,10 +235,10 @@ ngi_new(Config_Item *cfg)
    ngi_thaw(ng);
 
    if((ng->win->popup) && (ecore_x_screen_is_composited(e_manager_current_get()->num)))
-     composite_timer = ecore_timer_add(0.35, _ngi_composite_changes_cb, ng);
+     ng->composite_timer = ecore_timer_add(0.35, _ngi_composite_changes_cb, ng);
 
    if(!ecore_x_screen_is_composited(e_manager_current_get()->num))
-     force_timer = ecore_timer_add(0.15, _ngi_hack, ng);
+     ng->force_timer = ecore_timer_add(0.15, _ngi_hack, ng);
 
    return ng;
 }
@@ -1928,10 +1926,10 @@ _ngi_composite_changes_cb(void *data)
              Config_Item *ci;
              Eina_List *l;
 
-             if(composite_timer)
+             if(ng->composite_timer)
                {
-                  ecore_timer_del(composite_timer);
-                  composite_timer = NULL;
+                  ecore_timer_del(ng->composite_timer);
+                  ng->composite_timer = NULL;
                }
 
              ecore_evas_shaped_set(ng->win->popup->ecore_evas, 0);
@@ -1985,14 +1983,14 @@ _ngi_hack(void *data)
                   Config_Item *ci;
                   DBG("showing engage");
                   
-                  if(force_timer)
-                    {
-                       ecore_timer_del(force_timer);
-                       force_timer = NULL;
-                    }
-
                   EINA_LIST_FOREACH(ngi_config->items, l, ci)
                     {
+                       if(ci->ng->force_timer)
+                         {
+                            ecore_timer_del(ci->ng->force_timer);
+                            ci->ng->force_timer = NULL;
+                         }
+
                        ngi_free(ci->ng);
 
                        ngi_config->use_force = EINA_TRUE;
@@ -2017,14 +2015,14 @@ _ngi_hack(void *data)
                   Config_Item *ci;
                   DBG("none intersect, so we should reset engage on desktop");
                   
-                  if(force_timer)
-                    {
-                       ecore_timer_del(force_timer);
-                       force_timer = NULL;
-                    }
-
                   EINA_LIST_FOREACH(ngi_config->items, l, ci)
                     {
+                       if(ci->ng->force_timer)
+                         {
+                            ecore_timer_del(ci->ng->force_timer);
+                            ng->force_timer = NULL;
+                         }
+
                        ngi_free(ci->ng);
 
                        ngi_config->use_force = EINA_FALSE;
@@ -2299,12 +2297,7 @@ e_modapi_shutdown(E_Module *m)
    Ng *ng;
    Eina_List *l, *ll;
 
-   if (composite_timer)
-     ecore_timer_del(composite_timer);
-
-   if (force_timer)
-     ecore_timer_del(force_timer); 
-
+   
    if (maug)
      {
         e_int_menus_menu_augmentation_del("config/1", maug);
@@ -2317,6 +2310,12 @@ e_modapi_shutdown(E_Module *m)
      {
 	if (ng->cfg->config_dialog)
 	  e_object_del(E_OBJECT(ng->cfg->config_dialog));
+
+        if (ng->composite_timer)
+          ecore_timer_del(ng->composite_timer);
+        
+        if (ng->force_timer)
+          ecore_timer_del(ng->force_timer); 
 
 	ngi_free(ng);
      }

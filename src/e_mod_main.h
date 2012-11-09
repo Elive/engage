@@ -165,6 +165,8 @@ struct _Ng
 
   Evas_Object     *clip;
   Evas_Object     *bg_clip;
+  Ecore_Timer     *composite_timer;
+  Ecore_Timer     *force_timer;
 
   unsigned char    changed : 1;
 
