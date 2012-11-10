@@ -1935,11 +1935,12 @@ _ngi_composite_changes_cb(void *data)
              ecore_evas_shaped_set(ng->win->popup->ecore_evas, 0);
              e_popup_hide(ng->win->popup);
 
+             evas_object_hide(ng->o_label);
              EINA_LIST_FOREACH (ngi_config->items, l, ci)
-                ngi_free(ci->ng);
-
-             EINA_LIST_FOREACH (ngi_config->items, l, ci)
-                ngi_new(ci);
+               {
+                  ngi_free(ci->ng);
+                  ngi_new(ci);
+               }
 
              shaped = EINA_FALSE;
 
@@ -1982,7 +1983,8 @@ _ngi_hack(void *data)
                   Eina_List *l;
                   Config_Item *ci;
                   DBG("showing engage");
-                  
+
+                  evas_object_hide(ng->o_label);
                   EINA_LIST_FOREACH(ngi_config->items, l, ci)
                     {
                        if(ci->ng->force_timer)
