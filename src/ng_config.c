@@ -56,6 +56,58 @@ static void             _cb_box_up(void *data, void *data2);
 static void             _cb_box_down(void *data, void *data2);
 static void             _load_box_tlist(E_Config_Dialog_Data *cfdata);
 
+
+EAPI E_Config_Dialog *
+ngi_configure_one(E_Container *con, const char *params)
+{
+   E_Config_Dialog *cfd;
+   E_Config_Dialog_View *v;
+   Eina_List *l;
+   char buf[4096];
+   char path[128];
+   Config_Item *ci;
+   Config_Item *ci2;
+   int i = 0;
+
+   ci = eina_list_nth(ngi_config->items, 0);
+   
+
+   if (!ci->ng)
+     return;
+   
+   if (ci->config_dialog)
+      return;
+
+   EINA_LIST_FOREACH(ngi_config->items, l, ci2)
+   if (ci == ci2)
+      break;
+   else i++;
+
+   snprintf(path, sizeof(path), "applications/engage::%d", i);
+   if (e_config_dialog_find("E", path))
+      return;
+
+   v = E_NEW(E_Config_Dialog_View, 1);
+
+   /* Dialog Methods */
+   v->create_cfdata = _create_data;
+   v->free_cfdata = _free_data;
+   v->basic.apply_cfdata = _basic_apply_data;
+   v->basic.create_widgets = _basic_create_widgets;
+   v->advanced.apply_cfdata = NULL;
+   v->advanced.create_widgets = NULL;
+
+   /* Create The Dialog */
+   snprintf(buf, sizeof(buf), "%s/e-module-ng.edj", e_module_dir_get(ngi_config->module));
+   cfd = e_config_dialog_new(e_container_current_get(e_manager_current_get()),
+                             D_("Engage Configuration"),
+                             "E", path, buf, 0, v, ci);
+
+   ci->config_dialog = cfd;
+   ngi_bar_lock(ci->ng, 1);
+   return cfd;
+}
+
 void
 ngi_configure_module(Config_Item *ci)
 {
@@ -78,7 +130,7 @@ ngi_configure_module(Config_Item *ci)
       break;
    else i++;
 
-   snprintf(path, sizeof(path), "extensions/engage::%d", i);
+   snprintf(path, sizeof(path), "applications/engage::%d", i);
    if (e_config_dialog_find("E", path))
       return;
 

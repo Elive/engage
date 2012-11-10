@@ -373,6 +373,7 @@ void         ngi_border_menu_show             (Ngi_Box *box, E_Border *bd,
                                                int dir, Ecore_X_Time timestamp);
 
 Eina_Bool    ngi_object_theme_set(Evas_Object *obj, const char *part);
+EAPI E_Config_Dialog *ngi_configure_one(E_Container *con, const char *params);
 
 extern Config *ngi_config;
 extern E_Config_DD *ngi_conf_edd;

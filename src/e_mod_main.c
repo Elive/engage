@@ -2266,10 +2266,10 @@ e_modapi_init(E_Module *m)
         return m;
      }
 
-   e_configure_registry_item_add("extensions/engage", 40,
+   e_configure_registry_item_add("applications/engage", 40,
                                  D_("Engage"), NULL,
                                  "preferences-desktop-shelf",
-                                 ngi_instances_config);
+                                 ngi_configure_one);
 
    ngi_config->handlers = eina_list_append
      (ngi_config->handlers, ecore_event_handler_add
@@ -2330,7 +2330,7 @@ e_modapi_shutdown(E_Module *m)
    E_CONFIG_DD_FREE(ngi_conf_item_edd);
    E_CONFIG_DD_FREE(ngi_conf_edd);
 
-   e_configure_registry_item_del("extensions/engage");
+   e_configure_registry_item_del("applications/engage");
 
    return 1;
 }
