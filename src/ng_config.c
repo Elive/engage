@@ -179,17 +179,12 @@ _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cf
     * e_widget_on_change_hook_set(ob, _cb_slider_change, cfdata);
     * e_widget_framelist_object_append (of, ob); */
 
-   if (ngi_config->use_composite)
-     {
-        ob = e_widget_label_add (evas, D_("Background Opacity:"));
-        e_widget_framelist_object_append (of, ob);
-        ob = e_widget_slider_add (evas, 1, 0, D_("%1.0f \%"), 0, 255,
-                                  1.0, 0, NULL, &(cfdata->alpha), 100);
-        e_widget_on_change_hook_set(ob, _cb_slider_change, cfdata);
-        e_widget_framelist_object_append (of, ob);
-     }
-   else
-     cfdata->alpha = 255;
+   ob = e_widget_label_add (evas, D_("Background Opacity:"));
+   e_widget_framelist_object_append (of, ob);
+   ob = e_widget_slider_add (evas, 1, 0, D_("%1.0f \%"), 0, 255,
+                             1.0, 0, NULL, &(cfdata->alpha), 100);
+   e_widget_on_change_hook_set(ob, _cb_slider_change, cfdata);
+   e_widget_framelist_object_append (of, ob);
 
    ob = e_widget_check_add(evas, D_("Show Background Box"), &(cfdata->show_background));
    e_widget_framelist_object_append(of, ob);
