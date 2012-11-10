@@ -2117,7 +2117,7 @@ ngi_bar_config_new(int container_num, int zone_num)
    char buf[4096];
    char tmp[4096];
    FILE *f;
-   char *app_dir = "engage";
+   char *app_dir = "default";
 
    cfg = E_NEW(Config_Item, 1);
    cfg->show_label = 1;
@@ -2126,7 +2126,7 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->zone = zone_num;
    cfg->orient = E_GADCON_ORIENT_BOTTOM;
    cfg->size = 36;
-   cfg->autohide = AUTOHIDE_FULLSCREEN;
+   cfg->autohide = AUTOHIDE_OVERLAP;
    cfg->autohide_show_urgent = 0;
    cfg->hide_below_windows = 0;
    cfg->zoom_duration = 0.3;
