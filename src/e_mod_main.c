@@ -1152,15 +1152,21 @@ _ngi_zoom_in(Ng *ng)
      {
 	double now = ecore_time_get();
 
-	if (ng->state == unzooming)
+	if ((ng->state == unzooming) && !ngi_config->use_force)
 	  ng->start_zoom = now - (ng->cfg->zoom_duration - (now - ng->start_zoom));
+        else if ((ng->state == unzooming) && ngi_config->use_force)
+	  ng->start_zoom = now - (0.60 - (now - ng->start_zoom));
 	else
 	  ng->start_zoom = now;
 
 	ng->state = zooming;
      }
 
-   z = _ngi_anim_advance_in(ng->start_zoom, ng->cfg->zoom_duration);
+   if (!ngi_config->use_force)
+     z = _ngi_anim_advance_in(ng->start_zoom, ng->cfg->zoom_duration);
+   else
+     z = _ngi_anim_advance_in(ng->start_zoom, 0.60);
+
    ng->zoom = 1.0 + (ng->cfg->zoomfactor - 1.0) * z;
 
    if (z == 1.0)
@@ -1179,15 +1185,21 @@ _ngi_zoom_out(Ng *ng)
      {
 	double now = ecore_time_get();
 
-	if (ng->state == zooming)
+	if ((ng->state == zooming) && !ngi_config->use_force)
 	  ng->start_zoom = now - (ng->cfg->zoom_duration - (now - ng->start_zoom));
+        else if ((ng->state == zooming) && ngi_config->use_force)
+	  ng->start_zoom = now - (0.60 - (now - ng->start_zoom));
 	else
 	  ng->start_zoom = now;
 
 	ng->state = unzooming;
      }
 
-   z = _ngi_anim_advance_out(ng->start_zoom, ng->cfg->zoom_duration);
+   if (!ngi_config->use_force)
+     z = _ngi_anim_advance_out(ng->start_zoom, ng->cfg->zoom_duration);
+   else
+     z = _ngi_anim_advance_out(ng->start_zoom, 0.60);
+
    ng->zoom = 1.0 + (ng->cfg->zoomfactor - 1.0) * z;
 
    if (z == 0.0)
@@ -1212,6 +1224,8 @@ _ngi_autohide(Ng *ng, int hide)
    double duration = ng->cfg->zoom_duration;
    double step = ng->hide_step;
    double hide_max = ng->size + ng->opt.edge_offset + ng->opt.bg_offset;
+
+   if (ngi_config->use_force) duration = 0.60;
 
    if (hide)
      {
