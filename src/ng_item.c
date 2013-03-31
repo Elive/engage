@@ -178,7 +178,7 @@ ngi_item_mouse_in(Ngi_Item *it)
 
    ngi_item_signal_emit(it,"e,state,mouse,in");
 
-   if (it->box->ng->cfg->mouse_over_anim && !ngi_config->use_force)
+   if (it->box->ng->cfg->mouse_over_anim && !it->box->ng->cfg->shaped_set)
      ngi_item_signal_emit(it,"e,state,animate,in");
 
    if (it->cb_mouse_in)
@@ -192,7 +192,7 @@ ngi_item_mouse_out(Ngi_Item *it)
 
    ngi_item_signal_emit(it,"e,state,mouse,out");
 
-   if (it->box->ng->cfg->mouse_over_anim && !ngi_config->use_force)
+   if (it->box->ng->cfg->mouse_over_anim && !it->box->ng->cfg->shaped_set)
      ngi_item_signal_emit(it,"e,state,animate,out");
 
    if (it->cb_mouse_out)

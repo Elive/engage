@@ -6,7 +6,6 @@
 
 
 static int            _ngi_win_free(Ngi_Win *win);
-static Ngi_Win *      _ngi_win_new(Ng *ng);
 
 static Eina_Bool      _ngi_cb_container_resize(void *data, int type, void *event);
 
@@ -20,8 +19,6 @@ static Eina_Bool      _ngi_win_cb_mouse_wheel(void *data, int type, void *event)
 static Eina_Bool      _ngi_win_cb_desk_show(void *data, int type, void *event);
 static Eina_Bool      _ngi_win_cb_border_event(void *data, int type, void *event);
 
-static Eina_Bool      _ngi_composite_changes_cb(void *data);
-
 static void           _ngi_zoom_in(Ng *ng);
 static void           _ngi_zoom_out(Ng *ng);
 static void           _ngi_item_appear(Ng *ng, Ngi_Item *it);
@@ -33,13 +30,20 @@ static int            _ngi_autohide(Ng *ng, int hide);
 static Eina_Bool      _ngi_win_border_intersects(Ng *ng);
 static void           _ngi_label_pos_set(Ng *ng);
 
-static Eina_Bool      _ngi_hack(void *data);
+static Ngi_Win *     _ngi_composite_win_new(Ng *ng);
+static Ngi_Win *     _ngi_desktop_win_new(Ng *ng);
+static Ngi_Win *     _ngi_shaped_win_new(Ng *ng);
+
+static void          _ngi_win_stacking_auto_adjust(Ng *ng);
+static void          _ngi_win_stacking_set(Ng *ng);
+static Eina_Bool     _ngi_win_shaped_pointer_update(void *data);
+static Eina_Bool     _ngi_win_cb_change_event(void *data, int type, void *event);
 
 static int initialized = 0;
+static int mouse_win_x = 0;
+static int mouse_win_y = 0;
 
-static Eina_Bool shaped = EINA_FALSE;
-int mouse_out_hack = 0;
-
+static int ENGAGE_EVENT_WIN_CHANGE = 0;
 int engage_log;
 E_Config_DD *ngi_conf_edd = NULL;
 E_Config_DD *ngi_conf_item_edd = NULL;
@@ -50,6 +54,179 @@ Config *ngi_config = NULL;
 
 E_Int_Menu_Augmentation *maug = NULL;
 
+
+static Eina_Bool
+_ngi_win_cb_composite_activated(void *data EINA_UNUSED, int type EINA_UNUSED, void *event EINA_UNUSED)
+{
+   Ng *ng = data;
+   if (!ng) return EINA_TRUE;
+
+
+   if (ng->cfg->shaped_set || (ng->win_type != ENGAGE_WIN_COMPOSITE))
+     {
+        ng->cfg->shaped_set = EINA_FALSE;
+        ngi_config->use_composite = EINA_TRUE;
+
+        evas_object_hide(ng->o_label);
+        Eina_List *l;
+        Config_Item *ci;
+
+        //INF("Composite activated");
+        EINA_LIST_FOREACH(ngi_config->items, l, ci)
+          {
+             evas_object_hide(ci->ng->o_label);
+             ngi_free(ci->ng);
+             ngi_new(ci);
+          }
+     }
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_ngi_win_cb_composite_deactivated(void *data, int type EINA_UNUSED, void *event EINA_UNUSED)
+{
+   Ng *ng = data;
+   if (!ng) return EINA_FALSE;
+
+
+   if (ng->win_type != ENGAGE_WIN_DESKTOP)
+     {
+        ng->cfg->shaped_set = EINA_FALSE;
+        ngi_config->use_composite = EINA_FALSE;
+
+        evas_object_hide(ng->o_label);
+        Eina_List *l;
+        Config_Item *ci;
+
+        //INF("Composite deactivated");
+        EINA_LIST_FOREACH(ngi_config->items, l, ci)
+          {
+             evas_object_hide(ci->ng->o_label);
+             ngi_free(ci->ng);
+             ngi_new(ci);
+          }
+     }
+
+
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_ngi_win_cb_change_event(void *data, int type EINA_UNUSED, void *event EINA_UNUSED)
+{
+   Ng *ng = data;
+   if (!ng) return EINA_TRUE;
+
+
+   if (ng->cfg->shaped_set && !ng->shaped_active)
+     {
+        evas_object_hide(ng->o_label);
+        Eina_List *l;
+        Config_Item *ci;
+
+        //WRN("ENGAGE_EVENT_WIN_CHANGE Shaped: %d", ng->cfg->shaped_set);
+        EINA_LIST_FOREACH(ngi_config->items, l, ci)
+          {
+             evas_object_hide(ci->ng->o_label);
+             ngi_free(ci->ng);
+             ngi_new(ci);
+             _ngi_win_shaped_pointer_update(ci->ng);
+             ci->ng->shaped_pointer =
+                ecore_timer_add(0.015, _ngi_win_shaped_pointer_update, ci->ng);
+          }
+     }
+   else if (!ng->cfg->shaped_set && ng->shaped_active)
+     {
+        Eina_List *l;
+        Config_Item *ci;
+
+        //WRN("ENGAGE_EVENT_WIN_CHANGE Shaped: %d", ng->cfg->shaped_set);
+        EINA_LIST_FOREACH(ngi_config->items, l, ci)
+          {
+             ngi_free(ci->ng);
+             ngi_new(ci);
+          }
+     }
+   return EINA_TRUE;
+}
+
+static Eina_Bool
+_ngi_win_shaped_pointer_update(void *data)
+{
+   Ecore_Event_Mouse_Move ev_move;
+   int root_x, root_y;
+   int win_x, win_y;
+   Ng *ng;
+
+   ng = data;
+   ecore_x_pointer_root_xy_get(&root_x, &root_y);
+
+
+   if (ng->cfg->orient == E_GADCON_ORIENT_BOTTOM)
+     {
+        win_x = root_x - ((ng->zone->w /2) - (ng->win->rect.width /2));
+        win_y = (root_y - ng->zone->h) + ng->win->rect.height;
+
+        if (((win_x <= 1) || (win_x >= (int)ng->win->rect.width)) ||
+            ((win_y <= 1) || (win_y >= (int)ng->win->rect.height)))
+          {
+             ng->hide = EINA_TRUE;
+             ngi_mouse_out(ng);
+          }
+     }
+   else if (ng->cfg->orient == E_GADCON_ORIENT_LEFT)
+     {
+        win_x = root_x;
+        win_y = root_y - ((ng->zone->h /2) - (ng->win->rect.height /2));
+
+        if (((win_x >= (int)ng->win->rect.width) ||
+            ((win_y <= 1) || (win_y >= (int)ng->win->rect.height))))
+          {
+             ng->hide = EINA_TRUE;
+             ngi_mouse_out(ng);
+          }
+     }
+   else if (ng->cfg->orient == E_GADCON_ORIENT_RIGHT)
+     {
+        win_x = ng->zone->w - root_x;
+        win_y = root_y - ((ng->zone->h /2) - (ng->win->rect.height /2));
+
+        if (((win_x >= (int)ng->win->rect.width) ||
+            ((win_y <= 1) || (win_y >= (int)ng->win->rect.height))))
+          {
+             ng->hide = EINA_TRUE;
+             ngi_mouse_out(ng);
+          }
+     }
+   else if (ng->cfg->orient == E_GADCON_ORIENT_TOP)
+     {
+        win_x = root_x - ((ng->zone->w /2) - (ng->win->rect.width /2));
+        win_y = root_y;
+
+        if (((win_x <= 1) || (win_x >= (int)ng->win->rect.width)) ||
+            (win_y >= (int)ng->win->rect.height))
+          {
+             ng->hide = EINA_TRUE;
+             ngi_mouse_out(ng);
+          }
+     }
+
+  // INF("Zone: w=%d h=%d :: Win: x=%d y=%d", ng->zone->w, ng->zone->h, win_x, win_y);
+   if ((mouse_win_x == win_x) && (mouse_win_y == win_y))
+     return ECORE_CALLBACK_RENEW;
+
+   mouse_win_x = win_x;
+   mouse_win_y = win_y;
+
+   ev_move.x = win_x;
+   ev_move.y = win_y;
+   ev_move.root.x = root_x;
+   ev_move.root.y = root_y;
+   ev_move.event_window = ng->win->input;
+
+   _ngi_win_cb_mouse_move(ng, ECORE_EVENT_MOUSE_MOVE, &ev_move);
+   return ECORE_CALLBACK_RENEW;
+}
 
 Ng *
 ngi_new(Config_Item *cfg)
@@ -70,9 +247,21 @@ ngi_new(Config_Item *cfg)
    ngi_config->instances = eina_list_append(ngi_config->instances, ng);
 
    ng->zone = zone;
-   ng->win = _ngi_win_new(ng);
-   
-  
+
+   //ng->win = _ngi_win_new(ng);
+
+   if (ng->cfg->shaped_set)
+     ng->win = _ngi_shaped_win_new(ng);
+   else
+     ng->win = _ngi_composite_win_new(ng);
+
+   if (!ng->win)
+     {
+        ng->win = _ngi_desktop_win_new(ng);
+     }
+
+   _ngi_win_stacking_auto_adjust(ng);
+
    ng->zoom = 1.0;
    ng->size = ng->cfg->size;
 
@@ -80,7 +269,7 @@ ngi_new(Config_Item *cfg)
    ng->hide_state = show;
    ng->hide = EINA_TRUE;
    
-   ng->clip = evas_object_rectangle_add(ng->evas);   
+   ng->clip = evas_object_rectangle_add(ng->evas);
    evas_object_color_set(ng->clip, 255, 255, 255, 255);
 
    ng->bg_clip = evas_object_rectangle_add(ng->evas);
@@ -182,12 +371,16 @@ ngi_new(Config_Item *cfg)
 #define HANDLE(_event, _cb) \
    ng->handlers = eina_list_append(ng->handlers, ecore_event_handler_add(_event, _cb, ng));
 
-   HANDLE(ECORE_X_EVENT_MOUSE_IN,        _ngi_win_cb_mouse_in);
+   ENGAGE_EVENT_WIN_CHANGE = ecore_event_type_new();
+   if (!ng->cfg->shaped_set)
+     {
+        HANDLE(ECORE_EVENT_MOUSE_MOVE,        _ngi_win_cb_mouse_move);
+     }
    HANDLE(ECORE_X_EVENT_MOUSE_OUT,       _ngi_win_cb_mouse_out);
+   HANDLE(ECORE_X_EVENT_MOUSE_IN,        _ngi_win_cb_mouse_in);
    HANDLE(ECORE_EVENT_MOUSE_BUTTON_DOWN, _ngi_win_cb_mouse_down);
    HANDLE(ECORE_EVENT_MOUSE_BUTTON_UP,   _ngi_win_cb_mouse_up);
    HANDLE(ECORE_EVENT_MOUSE_WHEEL,       _ngi_win_cb_mouse_wheel);
-   HANDLE(ECORE_EVENT_MOUSE_MOVE,        _ngi_win_cb_mouse_move);
 
    HANDLE(E_EVENT_DESK_SHOW,       _ngi_win_cb_desk_show);
    HANDLE(E_EVENT_BORDER_PROPERTY, _ngi_win_cb_border_event);
@@ -195,7 +388,12 @@ ngi_new(Config_Item *cfg)
    HANDLE(E_EVENT_BORDER_RESIZE,   _ngi_win_cb_border_event);
    HANDLE(E_EVENT_BORDER_ADD,      _ngi_win_cb_border_event);
    HANDLE(E_EVENT_BORDER_REMOVE,   _ngi_win_cb_border_event);
+
+   HANDLE(ENGAGE_EVENT_WIN_CHANGE, _ngi_win_cb_change_event);
+   HANDLE(E_EVENT_COMPOSITE_ACTIVE, _ngi_win_cb_composite_activated);
+   HANDLE(E_EVENT_COMPOSITE_INACTIVE, _ngi_win_cb_composite_deactivated);
 #undef HANDLE
+
 
    if (ng->cfg->autohide == AUTOHIDE_FULLSCREEN)
      {
@@ -215,7 +413,7 @@ ngi_new(Config_Item *cfg)
 	  e_popup_show(ng->win->popup);
      }
 
-   if(ngi_config->use_force)
+   if(ng->cfg->shaped_set)
      e_popup_show(ng->win->popup);
 
    if (ng->cfg->autohide && ng->hide)
@@ -224,7 +422,7 @@ ngi_new(Config_Item *cfg)
         ng->hide_step = ng->size + ng->opt.edge_offset + ng->opt.bg_offset;
         ng->hide_state = hidden;
 
-        if(ngi_config->use_force)
+        if(ng->cfg->shaped_set)
           {
              ng->hide = EINA_FALSE;
              ng->hide_state = showing;
@@ -232,12 +430,6 @@ ngi_new(Config_Item *cfg)
      }
 
    ngi_thaw(ng);
-
-   if((ng->win->popup) && (ecore_x_screen_is_composited(e_manager_current_get()->num)))
-     ng->composite_timer = ecore_timer_add(0.35, _ngi_composite_changes_cb, ng);
-
-   if(!ecore_x_screen_is_composited(e_manager_current_get()->num))
-     ng->force_timer = ecore_timer_add(0.15, _ngi_hack, ng);
 
    return ng;
 }
@@ -264,8 +456,15 @@ ngi_free(Ng *ng)
    if (ng->animator)
       ecore_animator_del(ng->animator);
 
-   
-   
+   if (ng->composite_timer)
+     ecore_timer_del(ng->composite_timer);
+
+   if (ng->force_timer)
+     ecore_timer_del(ng->force_timer);
+
+   if (ng->shaped_pointer)
+     ecore_timer_del(ng->shaped_pointer);
+
    if (ng->menu_wait_timer)
       ecore_timer_del(ng->menu_wait_timer);
 
@@ -305,95 +504,154 @@ ngi_object_theme_set(Evas_Object *obj, const char *part)
      return edje_object_file_set(obj, ngi_config->theme_path, part);
 }
 
-static Ngi_Win *
-_ngi_win_new(Ng *ng)
+static void
+_ngi_win_stacking_set(Ng *ng)
 {
-   Ngi_Win *win;
-   
-   win = E_NEW(Ngi_Win, 1);
-   if (!win) return NULL;
-
-   win->ng = ng;
-   win->popup = NULL;
-   win->fake_iwin = NULL;
-
-   if((ng->cfg->old_stacking != ng->cfg->stacking) && (ngi_config->use_composite))
-     {
-        if(ng->cfg->stacking == ENGAGE_ON_DESKTOP)
-          ng->cfg->stacking = ng->cfg->old_stacking;
-     }
-
-   if (((ngi_config->use_composite) && (ng->cfg->stacking != ENGAGE_ON_DESKTOP)) ||
-       (ngi_config->use_force))
-     {
-        DBG("Composite Mode");
-        win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
-	ecore_evas_alpha_set(win->popup->ecore_evas, 1);
-	win->popup->evas_win = ecore_evas_software_x11_window_get(win->popup->ecore_evas);
-	win->input = win->popup->evas_win;
-	win->drop_win = E_OBJECT(win->popup);
-        ng->evas = win->popup->evas;
-
-        if(ngi_config->use_force)
-          {
-             ecore_evas_shaped_set(win->popup->ecore_evas, 1);
-             ng->cfg->stacking = ENGAGE_ABOVE_ALL;
-          }
-     }
-   else
-     {
-        DBG("Desktop Mode");
-        ng->evas = win->ng->zone->container->bg_evas;
-
-        win->input = ecore_x_window_input_new(ng->zone->container->win, 0, 0, 1, 1);
-        ecore_x_window_show(win->input);
-        e_drop_xdnd_register_set(win->input, 1);
-
-   
-        win->fake_iwin = E_OBJECT_ALLOC(E_Win, E_WIN_TYPE, NULL);
-        win->fake_iwin->x = 0;
-        win->fake_iwin->y = 0;
-        win->fake_iwin->w = 1;
-        win->fake_iwin->h = 1;
-        win->fake_iwin->evas_win = win->input;
-        win->drop_win = E_OBJECT(win->fake_iwin);
-     }
-
-   e_drop_xdnd_register_set(win->input, 1);
-   ecore_x_netwm_window_type_set(win->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
-
-   if(!(ngi_config->use_composite) && (ng->cfg->stacking != ENGAGE_ON_DESKTOP))
-     {
-        INF("Detected no composite, will automatically switch to desktop mode");
-        ng->cfg->old_stacking = ng->cfg->stacking;
-        ng->cfg->stacking = ENGAGE_ON_DESKTOP;
-
-        if(ngi_config->use_force)
-          ng->cfg->stacking = ENGAGE_ABOVE_ALL;
-     }
+   if (!ng) return;
+   if (!ng->win) return;
 
    switch (ng->cfg->stacking)
      {
       case ENGAGE_BELOW_FULLSCREEN:
-         INF("ENGAGE_BELOW_FULLSCREEN");
-	 e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_ABOVE);
-         e_container_window_raise(ng->zone->container, win->input, E_LAYER_ABOVE);
+         //INF("ENGAGE_BELOW_FULLSCREEN");
+	 e_container_window_raise(ng->zone->container, ng->win->evas_win, E_LAYER_ABOVE);
+         e_container_window_raise(ng->zone->container, ng->win->input, E_LAYER_ABOVE);
 	 break;
 
       case ENGAGE_ON_DESKTOP:
-         INF("ENGAGE_ON_DESKTOP");
-         e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_BELOW);
-	 e_container_window_raise(ng->zone->container, win->input, E_LAYER_BELOW);
-	 break;  
+         //INF("ENGAGE_ON_DESKTOP");
+         e_container_window_raise(ng->zone->container, ng->win->evas_win, E_LAYER_BELOW);
+	 e_container_window_raise(ng->zone->container, ng->win->input, E_LAYER_BELOW);
+	 break;
 
       case ENGAGE_ABOVE_ALL:
-         INF("ENGAGE_ABOVE_ALL");
-	 e_container_window_raise(ng->zone->container, win->evas_win, E_LAYER_FULLSCREEN);
-	 e_container_window_raise(ng->zone->container, win->input, 999);
+         //INF("ENGAGE_ABOVE_ALL");
+	 e_container_window_raise(ng->zone->container, ng->win->evas_win, E_LAYER_FULLSCREEN);
+	 e_container_window_raise(ng->zone->container, ng->win->input, 999);
+     }
+}
+
+static void
+_ngi_win_stacking_auto_adjust(Ng *ng)
+{
+   if (!ng) return;
+
+   if (ecore_x_screen_is_composited(e_manager_current_get()->num))
+     {
+        if ((ng->cfg->stacking != ng->cfg->old_stacking) &&
+            (ng->cfg->stacking == ENGAGE_ON_DESKTOP))
+          {
+             ng->cfg->stacking = ng->cfg->old_stacking;
+          }
+     }
+   else
+     {
+        if (ng->cfg->stacking != ENGAGE_ON_DESKTOP)
+          {
+             ng->cfg->old_stacking = ng->cfg->stacking;
+             ng->cfg->stacking = ENGAGE_ON_DESKTOP;
+          }
      }
 
-   if(ngi_config->use_force)
-     ngi_config->use_composite = EINA_TRUE;
+   if (ng->cfg->shaped_set)
+     ng->cfg->stacking = ENGAGE_ABOVE_ALL;
+
+   _ngi_win_stacking_set(ng);
+}
+
+static Ngi_Win *
+_ngi_composite_win_new(Ng *ng)
+{
+   Ngi_Win *win;
+
+   win = E_NEW(Ngi_Win, 1);
+   if (!win) return NULL;
+
+   if (!ecore_x_screen_is_composited(e_manager_current_get()->num))
+     return NULL;
+
+   win->ng = ng;
+
+   INF("win_type = ENGAGE_WIN_COMPOSITE");
+   ng->win_type = ENGAGE_WIN_COMPOSITE;
+   win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
+   ecore_evas_alpha_set(win->popup->ecore_evas, 1);
+   win->popup->evas_win = ecore_evas_software_x11_window_get(win->popup->ecore_evas);
+   win->input = win->popup->evas_win;
+   win->drop_win = E_OBJECT(win->popup);
+   ng->evas = win->popup->evas;
+
+   e_drop_xdnd_register_set(win->input, 1);
+   ecore_x_netwm_window_type_set(win->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
+
+   return win;
+}
+
+static Ngi_Win *
+_ngi_desktop_win_new(Ng *ng)
+{
+   Ngi_Win *win;
+
+   win = E_NEW(Ngi_Win, 1);
+   if (!win) return NULL;
+
+   if (ecore_x_screen_is_composited(e_manager_current_get()->num))
+     return NULL;
+
+   win->ng = ng;
+
+   INF("win_type = ENGAGE_WIN_DESKTOP");
+   ng->win_type = ENGAGE_WIN_DESKTOP;
+   ng->evas = win->ng->zone->container->bg_evas;
+
+   win->input = ecore_x_window_input_new(ng->zone->container->win, 0, 0, 1, 1);
+   ecore_x_window_show(win->input);
+   e_drop_xdnd_register_set(win->input, 1);
+
+   win->fake_iwin = E_OBJECT_ALLOC(E_Win, E_WIN_TYPE, NULL);
+   win->fake_iwin->x = 0;
+   win->fake_iwin->y = 0;
+   win->fake_iwin->w = 1;
+   win->fake_iwin->h = 1;
+   win->fake_iwin->evas_win = win->input;
+   win->drop_win = E_OBJECT(win->fake_iwin);
+
+   e_drop_xdnd_register_set(win->input, 1);
+   ecore_x_netwm_window_type_set(win->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
+
+   return win;
+}
+
+
+static Ngi_Win *
+_ngi_shaped_win_new(Ng *ng)
+{
+   Ngi_Win *win;
+
+   win = E_NEW(Ngi_Win, 1);
+   if (!win) return NULL;
+
+   if (ecore_x_screen_is_composited(e_manager_current_get()->num))
+     return NULL;
+
+   win->ng = ng;
+   INF("win_type = ENGAGE_WIN_SHAPED");
+   ng->win_type = ENGAGE_WIN_SHAPED;
+   ng->shaped_active = EINA_TRUE;
+
+   win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
+   ecore_evas_alpha_set(win->popup->ecore_evas, 1);
+   win->popup->evas_win = ecore_evas_software_x11_window_get(win->popup->ecore_evas);
+   win->input = win->popup->evas_win;
+   win->drop_win = E_OBJECT(win->popup);
+   ng->evas = win->popup->evas;
+
+   ecore_evas_shaped_set(win->popup->ecore_evas, 1);
+   ng->cfg->stacking = ENGAGE_ABOVE_ALL;
+
+   e_drop_xdnd_register_set(win->input, 1);
+   ecore_x_netwm_window_type_set(win->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
+
    return win;
 }
 
@@ -520,7 +778,7 @@ ngi_input_extents_calc(Ng *ng)
 
    //e_container_window_raise(ng->zone->container, win->input, 999);//FIXME: not sure if this is still needed
 
-   if ((ngi_config->use_composite) && (ng->win->popup)) 
+   if ((ngi_config->use_composite || ng->cfg->shaped_set) && (ng->win->popup))
      {
 	ecore_x_window_shape_input_rectangles_set(win->input, &win->rect, 1);
      }
@@ -620,12 +878,10 @@ ngi_win_position_calc(Ngi_Win *win)
    E_Gadcon_Orient orient = (E_Gadcon_Orient)ng->cfg->orient;
    int size = WINDOW_HEIGHT;
 
-   DBG("brefore_position_calc : x:%d y:%d w:%d h:%d", 
-       win->x, win->y, win->w, win->h);
+   //DBG("before_position_calc : x:%d y:%d w:%d h:%d", win->x, win->y, win->w, win->h);
 
-   if(win->popup)
-     DBG("POPUP:brefore_position_calc : x:%d y:%d w:%d h:%d", 
-         win->popup->x, win->popup->y, win->popup->w, win->popup->h);
+ //  if(win->popup)
+ //    DBG("POPUP:brefore_position_calc : x:%d y:%d w:%d h:%d", win->popup->x, win->popup->y, win->popup->w, win->popup->h);
 
    switch (orient)
      {
@@ -684,12 +940,13 @@ ngi_win_position_calc(Ngi_Win *win)
 	 break;
      }
 
-   DBG("after_position_calc : x:%d y:%d w:%d h:%d", 
-       win->x, win->y, win->w, win->h);
-
+   /*
    if(win->popup)
-     DBG("POPUP:after_position_calc : x:%d y:%d w:%d h:%d", 
+     DBG("after_position_calc : x:%d y:%d w:%d h:%d",
          win->popup->x, win->popup->y, win->popup->w, win->popup->h);
+   else
+     DBG("after_position_calc : x:%d y:%d w:%d h:%d", win->x, win->y, win->w, win->h);
+   */
 
 
    if (win->fake_iwin)
@@ -765,6 +1022,14 @@ _ngi_win_cb_mouse_in(void *data, int type EINA_UNUSED, void *event)
    if (ev->win != ng->win->input)
       return EINA_TRUE;
 
+   if (!ecore_x_screen_is_composited(e_manager_current_get()->num) &&
+       _ngi_win_border_intersects(ng))
+     {
+        ng->cfg->shaped_set = EINA_TRUE;
+        ecore_event_add(ENGAGE_EVENT_WIN_CHANGE, NULL, NULL, NULL);
+     }
+
+   //INF("Ecore_X_Event_Mouse_In");
    ng->pos = ng->horizontal ?
       (ev->root.x - ng->zone->x) :
       (ev->root.y - ng->zone->y);
@@ -802,18 +1067,15 @@ _ngi_win_cb_mouse_out(void *data, int type EINA_UNUSED, void *event)
    if (ev->win != ng->win->input)
       return EINA_TRUE;
 
-   DBG("mouse out");
+   if ((((mouse_win_x >= 1) && (mouse_win_x <= (int)ng->win->rect.width)) ||
+       ((mouse_win_y >= 1) && (mouse_win_y <= (int)ng->win->rect.height))) &&
+       (ng->cfg->shaped_set))
+     return EINA_TRUE;
+
    ngi_mouse_out(ng);
 
-   if (ngi_config->use_force)
-     {
-        mouse_out_hack +=1;
-        if (mouse_out_hack >1)
-          {
-             ng->hide = EINA_TRUE;
-             mouse_out_hack = 0;
-          } 
-     }
+   if (ng->cfg->shaped_set)
+     ng->hide = EINA_TRUE;
 
    if (!ngi_config->use_composite)
      evas_event_feed_mouse_out(ng->evas, ev->time, NULL);
@@ -949,6 +1211,7 @@ _ngi_win_cb_mouse_move(void *data, int type EINA_UNUSED, void *event)
 
    ng->pos -= ng->horizontal ? ng->zone->x : ng->zone->y;
 
+   //WRN("X:%d :: Y:%d RECT: %dx%d", ev->x, ev->y, ng->win->rect.width, ng->win->rect.height);
    if (!ng->mouse_in)
      return EINA_TRUE;
 
@@ -1148,17 +1411,15 @@ _ngi_zoom_in(Ng *ng)
      {
 	double now = ecore_time_get();
 
-	if ((ng->state == unzooming) && !ngi_config->use_force)
+	if (ng->state == unzooming)
 	  ng->start_zoom = now - (ng->cfg->zoom_duration - (now - ng->start_zoom));
-        else if ((ng->state == unzooming) && ngi_config->use_force)
-	  ng->start_zoom = now - (0.60 - (now - ng->start_zoom));
 	else
 	  ng->start_zoom = now;
 
 	ng->state = zooming;
      }
 
-   if (!ngi_config->use_force)
+   if (!ng->cfg->shaped_set)
      z = _ngi_anim_advance_in(ng->start_zoom, ng->cfg->zoom_duration);
    else
      z = _ngi_anim_advance_in(ng->start_zoom, 0.60);
@@ -1181,9 +1442,9 @@ _ngi_zoom_out(Ng *ng)
      {
 	double now = ecore_time_get();
 
-	if ((ng->state == zooming) && !ngi_config->use_force)
+	if ((ng->state == zooming) && !ng->cfg->shaped_set)
 	  ng->start_zoom = now - (ng->cfg->zoom_duration - (now - ng->start_zoom));
-        else if ((ng->state == zooming) && ngi_config->use_force)
+        else if ((ng->state == zooming) && ng->cfg->shaped_set)
 	  ng->start_zoom = now - (0.60 - (now - ng->start_zoom));
 	else
 	  ng->start_zoom = now;
@@ -1191,7 +1452,7 @@ _ngi_zoom_out(Ng *ng)
 	ng->state = unzooming;
      }
 
-   if (!ngi_config->use_force)
+   if (!ng->cfg->shaped_set)
      z = _ngi_anim_advance_out(ng->start_zoom, ng->cfg->zoom_duration);
    else
      z = _ngi_anim_advance_out(ng->start_zoom, 0.60);
@@ -1221,7 +1482,7 @@ _ngi_autohide(Ng *ng, int hide)
    double step = ng->hide_step;
    double hide_max = ng->size + ng->opt.edge_offset + ng->opt.bg_offset;
 
-   if (ngi_config->use_force) duration = 0.60;
+   if (ng->cfg->shaped_set) duration = 0.60;
 
    if (hide)
      {
@@ -1247,6 +1508,13 @@ _ngi_autohide(Ng *ng, int hide)
 	     ng->hide_state = hidden;
 	     ng->hide_step = hide_max;
 	     ngi_input_extents_calc(ng);
+
+             if (ng->shaped_active && ng->cfg->shaped_set)
+               {
+                  ng->cfg->shaped_set = EINA_FALSE;
+                  ecore_event_add(ENGAGE_EVENT_WIN_CHANGE, NULL, NULL, NULL);
+               }
+
 	     return 0;
 	  }
      }
@@ -1919,137 +2187,6 @@ _ngi_win_cb_border_event(void *data, int type EINA_UNUSED, void *event)
 
    return EINA_TRUE;
 }
-
-static Eina_Bool
-_ngi_composite_changes_cb(void *data)
-{
-   Ng *ng;
-   
-   if(!(ng = data)) return ECORE_CALLBACK_PASS_ON;
-   if(ngi_config->use_force) return ECORE_CALLBACK_PASS_ON;
-
-   if(ecore_x_screen_is_composited(e_manager_current_get()->num))
-     {
-        if(shaped)
-          {
-             Config_Item *ci;
-             Eina_List *l;
-
-             if(ng->composite_timer)
-               {
-                  ecore_timer_del(ng->composite_timer);
-                  ng->composite_timer = NULL;
-               }
-
-             ecore_evas_shaped_set(ng->win->popup->ecore_evas, 0);
-             e_popup_hide(ng->win->popup);
-
-             evas_object_hide(ng->o_label);
-             EINA_LIST_FOREACH (ngi_config->items, l, ci)
-               {
-                  ngi_free(ci->ng);
-                  ngi_new(ci);
-               }
-
-             shaped = EINA_FALSE;
-
-             return ECORE_CALLBACK_DONE;
-          }
-          
-        return ECORE_CALLBACK_PASS_ON;
-     }
-   else
-     {
-        if(!shaped)
-          {
-             Config_Item *ci;
-             Eina_List *l;
-
-             EINA_LIST_FOREACH (ngi_config->items, l, ci)
-                ecore_evas_shaped_set(ci->ng->win->popup->ecore_evas, 1);
-             shaped = EINA_TRUE;
-          }
-
-        return ECORE_CALLBACK_PASS_ON;
-     }
-   return ECORE_CALLBACK_RENEW;
-}
-
-static Eina_Bool
-_ngi_hack(void *data)
-{
-   Ng *ng;
-
-   if(!(ng = data)) return ECORE_CALLBACK_PASS_ON;
-
-   if((ng->cfg->stacking == ENGAGE_ON_DESKTOP) &&
-      (ng->cfg->autohide == AUTOHIDE_OVERLAP))
-     {
-        if(_ngi_win_border_intersects(ng))
-          {
-             if(ng->hide_state == showing || ng->hide_state == show)
-               {
-                  Eina_List *l;
-                  Config_Item *ci;
-                  DBG("showing engage");
-
-                  evas_object_hide(ng->o_label);
-                  EINA_LIST_FOREACH(ngi_config->items, l, ci)
-                    {
-                       if(ci->ng->force_timer)
-                         {
-                            ecore_timer_del(ci->ng->force_timer);
-                            ci->ng->force_timer = NULL;
-                         }
-
-                       ngi_free(ci->ng);
-
-                       ngi_config->use_force = EINA_TRUE;
-                       ngi_config->unset_force = EINA_FALSE;
-                       ngi_new(ci);
-                    }
-
-                  return ECORE_CALLBACK_DONE;
-               }
-          }
-     }
-   
-   if (!ecore_x_screen_is_composited(e_manager_current_get()->num))
-     {
-        if ((ng->cfg->stacking != ENGAGE_ON_DESKTOP) && 
-            (ng->cfg->autohide == AUTOHIDE_OVERLAP))
-          {
-             if ((!_ngi_win_border_intersects(ng) && !(ngi_config->unset_force)) ||
-                  ng->hide_state == hidden)
-               {
-                  Eina_List *l;
-                  Config_Item *ci;
-                  DBG("none intersect, so we should reset engage on desktop");
-                  
-                  EINA_LIST_FOREACH(ngi_config->items, l, ci)
-                    {
-                       if(ci->ng->force_timer)
-                         {
-                            ecore_timer_del(ci->ng->force_timer);
-                            ng->force_timer = NULL;
-                         }
-
-                       ngi_free(ci->ng);
-
-                       ngi_config->use_force = EINA_FALSE;
-                       ngi_config->unset_force = EINA_TRUE;
-                       ngi_config->use_composite = EINA_FALSE;
-                       ngi_new(ci);
-                    }
-
-                  return ECORE_CALLBACK_DONE;
-               }
-          }
-     }
-
-   return ECORE_CALLBACK_PASS_ON;
-}
-   
 
 /***************************************************************************/
 

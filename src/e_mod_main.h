@@ -60,10 +60,6 @@ struct _Config
   char          *theme_path;
 
   int            use_composite;
-  
-  int            use_force;
-  int            unset_force;
-
   int            show_label;
   E_Config_Dialog *cfd;
   Eina_List       *handlers;
@@ -89,7 +85,7 @@ struct _Config_Item
   float	         zoom_duration;
   int            alpha;
   int            mouse_over_anim;
-  enum 
+  enum
     {
        ENGAGE_ABOVE_ALL,
        ENGAGE_BELOW_FULLSCREEN,
@@ -101,6 +97,7 @@ struct _Config_Item
   int            ecomorph_features;
 
   Eina_List     *boxes;
+  Eina_Bool      shaped_set;
 
   E_Config_Dialog *config_dialog;
 };
@@ -167,6 +164,7 @@ struct _Ng
   Evas_Object     *bg_clip;
   Ecore_Timer     *composite_timer;
   Ecore_Timer     *force_timer;
+  Ecore_Timer     *shaped_pointer;
 
   unsigned char    changed : 1;
 
@@ -188,8 +186,17 @@ struct _Ng
 
   int              hide_step;
 
-  int              w, h, start;
+  /*w = width of the bar when it is NOT zoomed*/
+  int              w, h, start; 
   Eina_Bool        horizontal;
+  Eina_Bool        shaped_active;
+
+  enum
+    {
+       ENGAGE_WIN_COMPOSITE,
+       ENGAGE_WIN_DESKTOP,
+       ENGAGE_WIN_SHAPED
+    }win_type, win_type_preset;
 
   int              mouse_in;
   int              show_bar;
