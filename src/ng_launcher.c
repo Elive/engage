@@ -57,8 +57,8 @@ ngi_launcher_new(Ng *ng, Config_Box *cfg)
 
    if (cfg->launcher_app_dir[0] != '/')
      {
-        snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar/%s/.order",
-                 e_user_homedir_get(), cfg->launcher_app_dir);
+        snprintf(buf, sizeof(buf), "%s/applications/bar/%s/.order",
+                 e_user_dir_get(), cfg->launcher_app_dir);
      }
    else
      snprintf(buf, sizeof(buf), "%s", cfg->launcher_app_dir);
@@ -492,8 +492,8 @@ _menu_cb_configure_launcher(void *data, E_Menu *m EINA_UNUSED, E_Menu_Item *mi E
    if (!box)
      return;
 
-   snprintf(path, sizeof(path), "%s/.e/e/applications/bar/%s/.order",
-            e_user_homedir_get(), box->cfg->launcher_app_dir);
+   snprintf(path, sizeof(path), "%s/applications/bar/%s/.order",
+            e_user_dir_get(), box->cfg->launcher_app_dir);
 
    e_configure_registry_call("internal/ibar_other",
                              e_container_current_get(e_manager_current_get()),

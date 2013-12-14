@@ -865,8 +865,8 @@ _cb_config(void *data, void *data2 EINA_UNUSED)
 {
    char path[4096];
    E_Config_Dialog_Data *cfdata = (E_Config_Dialog_Data *)data;
-   snprintf(path, sizeof(path), "%s/.e/e/applications/bar/%s/.order",
-            e_user_homedir_get(), cfdata->app_dir);
+   snprintf(path, sizeof(path), "%s/applications/bar/%s/.order",
+            e_user_dir_get(), cfdata->app_dir);
 
    e_configure_registry_call("internal/ibar_other",
                              e_container_current_get(e_manager_current_get()),
@@ -880,15 +880,15 @@ _cb_entry_ok(void *data, char *text)
    char tmp[4096];
    FILE *f;
 
-   snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar/%s",
-            e_user_homedir_get(), text);
+   snprintf(buf, sizeof(buf), "%s/applications/bar/%s",
+            e_user_dir_get(), text);
 
    if (!ecore_file_exists(buf))
      {
         ecore_file_mkdir(buf);
 
-        snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar/%s/.order",
-                 e_user_homedir_get(), text);
+        snprintf(buf, sizeof(buf), "%s/applications/bar/%s/.order",
+                 e_user_dir_get(), text);
 
         f = fopen(buf, "w");
         if (f)
@@ -911,7 +911,7 @@ _cb_confirm_dialog_yes(void *data)
    E_Config_Dialog_Data *cfdata = (E_Config_Dialog_Data *)data;
    char buf[4096];
 
-   snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar/%s", e_user_homedir_get(), cfdata->app_dir);
+   snprintf(buf, sizeof(buf), "%s/applications/bar/%s", e_user_dir_get(), cfdata->app_dir);
 
    if (ecore_file_is_dir(buf))
       ecore_file_recursive_rm(buf);
@@ -925,12 +925,10 @@ _load_ilist(E_Config_Dialog_Data *cfdata)
    Eina_List *dirs, *l;
    char buf[4096], *file;
    int selnum = -1;
-   const char *home;
    int i = 0;
    e_widget_ilist_clear(cfdata->tlist_box);
 
-   home = e_user_homedir_get();
-   snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar", home);
+   snprintf(buf, sizeof(buf), "%s/applications/bar", e_user_dir_get());
    dirs = ecore_file_ls(buf);
 
    EINA_LIST_FOREACH(dirs, l, file)
@@ -938,7 +936,7 @@ _load_ilist(E_Config_Dialog_Data *cfdata)
       if (file[0] == '.')
          continue;
 
-      snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar/%s", home, file);
+      snprintf(buf, sizeof(buf), "%s/applications/bar/%s", e_user_dir_get(), file);
       if (ecore_file_is_dir(buf))
         {
            e_widget_ilist_append(cfdata->tlist_box, NULL, file, NULL, NULL, file);

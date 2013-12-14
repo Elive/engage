@@ -2307,14 +2307,14 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg_box->taskbar_group_apps = 1;
    cfg->boxes = eina_list_append(cfg->boxes, cfg_box);
 
-   snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar/%s",
-	    e_user_homedir_get(), app_dir);
+   snprintf(buf, sizeof(buf), "%s/applications/bar/%s",
+	    e_user_dir_get(), app_dir);
 
    if (!ecore_file_exists(buf))
      {
 	ecore_file_mkdir(buf);
-	snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar/%s/.order",
-		 e_user_homedir_get(), app_dir);
+	snprintf(buf, sizeof(buf), "%s/applications/bar/%s/.order",
+		 e_user_dir_get(), app_dir);
 	f = fopen(buf, "w");
 	if (f)
 	  {
@@ -2409,7 +2409,7 @@ e_modapi_init(E_Module *m)
    snprintf(buf, sizeof(buf), "%s/engage.edj", e_module_dir_get(m));
    ngi_config->theme_path = strdup(buf);
 
-   snprintf(buf, sizeof(buf), "%s/.e/e/applications/bar/", e_user_homedir_get());
+   snprintf(buf, sizeof(buf), "%s/applications/bar/", e_user_dir_get());
    if (!ecore_file_mkdir(buf) && !ecore_file_is_dir(buf))
      {
         e_error_message_show("Error creating directory:\n %s\n",buf);

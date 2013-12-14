@@ -1,2 +1,4 @@
-
+2013-12-14
+    * changed e_user_homedir_get to e_user_dir_get, this allows you to set
+    $E_HOME and engage will still work.
 
