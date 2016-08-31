@@ -2271,20 +2271,20 @@ ngi_bar_config_new(int container_num, int zone_num)
 
    cfg = E_NEW(Config_Item, 1);
    cfg->show_label = 1;
-   cfg->show_background = 1;
+   cfg->show_background = 0;
    cfg->container = container_num;
    cfg->zone = zone_num;
    cfg->orient = E_GADCON_ORIENT_BOTTOM;
    cfg->size = 36;
    cfg->autohide = AUTOHIDE_OVERLAP;
-   cfg->autohide_show_urgent = 0;
-   cfg->hide_below_windows = 0;
-   cfg->zoom_duration = 0.3;
-   cfg->zoom_range = 1.5;
+   cfg->autohide_show_urgent = 1;
+   cfg->hide_below_windows = 1;
+   cfg->zoom_duration = 0.4;
+   cfg->zoom_range = 2.0;
    cfg->hide_timeout = 0.1;
-   cfg->zoomfactor = 2.0;
+   cfg->zoomfactor = 2.2;
    cfg->alpha = 255;
-   cfg->stacking = ENGAGE_ABOVE_ALL;
+   cfg->stacking = ENGAGE_BELOW_FULLSCREEN;
    cfg->old_stacking = cfg->stacking;
    cfg->mouse_over_anim = 1;
    cfg->lock_deskswitch = 1;
@@ -2294,18 +2294,18 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg_box = E_NEW(Config_Box, 1);
    cfg_box->type = launcher;
    cfg_box->launcher_app_dir = eina_stringshare_add(app_dir);
-   cfg_box->launcher_lock_dnd = 0;
+   cfg_box->launcher_lock_dnd = 1;
    cfg->boxes = eina_list_append(cfg->boxes, cfg_box);
 
-   cfg_box = E_NEW(Config_Box, 1);
-   cfg_box->type = taskbar;
-   cfg_box->taskbar_adv_bordermenu = 0;
-   cfg_box->taskbar_skip_dialogs = 0;
-   cfg_box->taskbar_show_iconified = 1;
-   cfg_box->taskbar_show_desktop = 0;
-   cfg_box->taskbar_append_right = 0;
-   cfg_box->taskbar_group_apps = 1;
-   cfg->boxes = eina_list_append(cfg->boxes, cfg_box);
+   /*cfg_box = E_NEW(Config_Box, 1);*/
+   /*cfg_box->type = taskbar;*/
+   /*cfg_box->taskbar_adv_bordermenu = 0;*/
+   /*cfg_box->taskbar_skip_dialogs = 0;*/
+   /*cfg_box->taskbar_show_iconified = 1;*/
+   /*cfg_box->taskbar_show_desktop = 0;*/
+   /*cfg_box->taskbar_append_right = 0;*/
+   /*cfg_box->taskbar_group_apps = 1;*/
+   /*cfg->boxes = eina_list_append(cfg->boxes, cfg_box);*/
 
    snprintf(buf, sizeof(buf), "%s/applications/bar/%s",
 	    e_user_dir_get(), app_dir);
