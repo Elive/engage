@@ -31,7 +31,7 @@ static Ecore_X_Atom ECOMORPH_ATOM_THUMBNAIL = 0;
 void
 ngi_taskbar_init(void)
 {
-   ECOMORPH_ATOM_THUMBNAIL = ecore_x_atom_get("__ECOMORPH_THUMBNAIL");
+   ECOMORPH_ATOM_THUMBNAIL = ecore_x_atom_get("__ECOMORPH_PLUGIN");
 }
 
 void
