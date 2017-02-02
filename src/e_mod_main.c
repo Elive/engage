@@ -2288,7 +2288,7 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->old_stacking = cfg->stacking;
    cfg->mouse_over_anim = 1;
    cfg->lock_deskswitch = 1;
-   cfg->ecomorph_features = 0;
+   cfg->ecomorph_features = 1;
    cfg->boxes = NULL;
 
    cfg_box = E_NEW(Config_Box, 1);
