@@ -393,7 +393,7 @@ collections{
 
 				description {
 					state: "focused" 0.0;
-					color: 200 200 255 255;
+					color: 20 120 180 255;
 				}
 			}
 			part {
@@ -409,7 +409,7 @@ collections{
 
 				description {
 					state: "iconic" 0.0;
-					color: 200 200 200 255;
+					color: 200 80 200 255;
 				}
 			}
 
@@ -425,7 +425,7 @@ collections{
 				}
 				description {
 					state: "urgent" 0.0;
-					color: 255 180 180 255;
+					color: 255 180 10 255;
 				}
 			}
 
@@ -441,7 +441,7 @@ collections{
 				}
 				description {
 					state: "mouse_down" 0.0;
-					color: 10 200 200 255;
+					color: 100 160 160 255;
 				}
 			}
 
@@ -648,30 +648,30 @@ collections{
 
 		programs {
 
-			program {
-				name: "go_active";
-				signal: "e,state,animate,in";
-				source: "e";
-				action: STATE_SET "visible" 0.0;
-				target: "background";
-				after: "go_active2";
-			}
-			program {
-				name: "go_active2";
-				action: STATE_SET "hidden" 0.0;
-				transition: LINEAR 0.5;
-				target: "background";
-				after: "go_active";
-			}
-			program {
-				name: "go_passive";
-				signal: "e,state,animate,out";
-				source: "e";
-				action: ACTION_STOP;
-				target: "go_active";
-				target: "go_active2";
-				after: "go_passive2";
-			}
+			/*program {*/
+				/*name: "go_active";*/
+				/*signal: "e,state,animate,in";*/
+				/*source: "e";*/
+				/*action: STATE_SET "visible" 0.0;*/
+				/*target: "background";*/
+				/*after: "go_active2";*/
+			/*}*/
+			/*program {*/
+				/*name: "go_active2";*/
+				/*action: STATE_SET "hidden" 0.0;*/
+				/*transition: LINEAR 0.5;*/
+				/*target: "background";*/
+				/*after: "go_active";*/
+			/*}*/
+			/*program {*/
+				/*name: "go_passive";*/
+				/*signal: "e,state,animate,out";*/
+				/*source: "e";*/
+				/*action: ACTION_STOP;*/
+				/*target: "go_active";*/
+				/*target: "go_active2";*/
+				/*after: "go_passive2";*/
+			/*}*/
 			program {
 				name: "go_passive2";
 				action: STATE_SET "default" 0.0;
