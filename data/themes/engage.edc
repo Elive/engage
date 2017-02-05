@@ -121,15 +121,15 @@ collections{
 				description {						\
 					state: "default" 0.0;			\
 					align: 0.5 0.5;					\
-					color: 0 0 0 148;				\
-					max: 999 26;					\
+					color: 0 0 0 60;				\
+					max: 999 36;					\
 					rel1 {							\
 						to: "e.text.label";			\
-						offset: -8 -2;				\
+						offset: -14 -5;				\
 					}								\
 					rel2 {							\
 						to: "e.text.label";			\
-						offset: 4 -1;				\
+						offset: 14 4;				\
 					}								\
 					image {							\
 						normal: "itask_im4.png";	\
@@ -145,7 +145,7 @@ collections{
 				description {						\
 					state: "default" 0.0;			\
 					align: 0.5 1.0;					\
-					color: 255 0 0 148;				\
+					color: 255 0 0 80;				\
 					min: 11 6;						\
 					max: 11 6;						\
 					fixed: 1 1;						\
@@ -173,14 +173,14 @@ collections{
 				description {						\
 					state: "default" 0.0;			\
 					align: ALIGN;					\
-					color: 255 255 255 255;			\
+					color: 255 255 255 240;			\
 					color3: 0 0 0 0;				\
 					rel1.offset: 0 2;				\
 					rel2.offset: -1 -1;				\
 					text {							\
 						text: "";					\
-						font: "Sans:style=Bold";	\
-						size: 11;					\
+						font: "Sans";	\
+						size: 18;					\
 						min: 1 1;					\
 						align: 0.5 0.5;				\
                                                 ellipsis: -1;                              \
@@ -196,7 +196,7 @@ collections{
 					state: "default" 0.0;			\
 					align: 0.5 0.5;					\
 					color: 255 255 255 0;			\
-					min: 0 33;						\
+					min: 0 49;						\
 					rel1 {							\
 						to: "e.text.label";			\
 						offset: -12 -4;				\
@@ -441,7 +441,7 @@ collections{
 				}
 				description {
 					state: "mouse_down" 0.0;
-					color: 200 200 200 255;
+					color: 10 200 200 255;
 				}
 			}
 
