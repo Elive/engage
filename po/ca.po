@@ -1,19 +1,18 @@
-# Italian translation for E17 engage module.
-# This file is put in the public domain.
-# Massimo Maiurana <maiurana@gmail.com>, 2010.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Engage\n"
-"Report-Msgid-Bugs-To: hannes.janetzek@gmail.com\n"
-"POT-Creation-Date: 2015-03-11 18:29+0100\n"
-"PO-Revision-Date: 2015-03-11 18:30+0100\n"
-"Last-Translator: Massimo Maiurana <maiurana@gmail.com>\n"
-"Language-Team: none\n"
-"Language: it\n"
+"Project-Id-Version: Marc Furtià  i Puig\\\n"
+"Report-Msgid-Bugs-To: $MSGID_BUGS_ADDRESS\n"
+"POT-Creation-Date: 2015-02-11 18:46+0100\n"
+"PO-Revision-Date: 2015-02-20 08:38+0000\n"
+"Last-Translator: JoanColl <Unknown>\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2015-02-21 05:12+0000\n"
+"X-Generator: Launchpad (build 17355)\n"
+"Language: ca\n"
+"X-Poedit-Bookmarks: -1,-1,1139,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: src/e_mod_main.c:1705 src/e_mod_main.c:1863 src/e_mod_main.c:1890
 msgid "Engage"
@@ -21,83 +20,83 @@ msgstr "Engage"
 
 #: src/ng_taskbar.c:641
 msgid "No name!"
-msgstr "Nessun nome!"
+msgstr "No té nom!"
 
 #: src/ng_launcher.c:275
 msgid "Open Directory"
-msgstr "Apri directory"
+msgstr "Obre directori"
 
 #: src/ng_launcher.c:561
 msgid "Configure Bar"
-msgstr "Configura barra"
+msgstr "Configura la barra"
 
 #: src/ng_launcher.c:565
 msgid "Lock Dragging"
-msgstr "Blocca trascinamento"
+msgstr "Bloqueja desplaçamant"
 
 #: src/ng_launcher.c:574
 msgid "Applications"
-msgstr "Applicazioni"
+msgstr "Aplicacions"
 
 #: src/ng_launcher.c:578
 msgid "Edit Icon"
-msgstr "Modifica icona"
+msgstr "Edita icona"
 
 #: src/ng_border_menu.c:30
 msgid "Fullscreen"
-msgstr "A tutto schermo"
+msgstr "Pantalla completa"
 
 #: src/ng_border_menu.c:45
 msgid "Close"
-msgstr "Chiudi"
+msgstr "Tanca"
 
 #: src/ng_border_menu.c:66
 msgid "Maximized"
-msgstr "Massimizzata"
+msgstr "Maximitzat"
 
 #: src/ng_border_menu.c:86
 msgid "Uniconify"
-msgstr "Disiconifica"
+msgstr "Desiconifica"
 
 #: src/ng_border_menu.c:88
 msgid "Iconify"
-msgstr "Iconifica"
+msgstr "Minimitza"
 
 #: src/ng_gadcon.c:260
 msgid "Gadcon Config"
-msgstr "Configurazione Gadcon"
+msgstr "Configuració Gadcon"
 
 #: src/ng_gadcon.c:299
 msgid "Available Gadgets"
-msgstr "Gadget disponibili"
+msgstr "Ginys disponibles"
 
 #: src/ng_gadcon.c:306
 msgid "Add Gadget"
-msgstr "Aggiungi gadget"
+msgstr "Afegeix giny"
 
 #: src/ng_gadcon.c:312
 msgid "Selected Gadgets"
-msgstr "Gadget selezionati"
+msgstr "Ginys seleccionats"
 
 #: src/ng_gadcon.c:319
 msgid "Remove Gadget"
-msgstr "Rimuovi gadget"
+msgstr "Elimina giny"
 
 #: src/ng_gadcon.c:327 src/ng_gadcon.c:370 src/ng_gadcon.c:394
 msgid "Description: Unavailable"
-msgstr "Descrizione: non disponibile"
+msgstr "Descripció: No disponible"
 
 #: src/ng_config.c:98
 msgid "Engage Configuration"
-msgstr "Configurazione di Engage"
+msgstr "Configuració Engage"
 
 #: src/ng_config.c:167 src/ng_config.c:228
 msgid "Appearance"
-msgstr "Aspetto"
+msgstr "Aparença"
 
 #: src/ng_config.c:168
 msgid "Icon Size:"
-msgstr "Dimensione icona:"
+msgstr "Mida de les icones:"
 
 #: src/ng_config.c:170
 #, c-format
@@ -106,7 +105,7 @@ msgstr "%1.0f px"
 
 #: src/ng_config.c:184
 msgid "Background Opacity:"
-msgstr "Trasparenza sfondo:"
+msgstr "Opacitat del fons:"
 
 #: src/ng_config.c:186
 msgid "%1.0f %"
@@ -114,55 +113,55 @@ msgstr "%1.0f %"
 
 #: src/ng_config.c:194
 msgid "Show Background Box"
-msgstr "Mostra box di sfondo"
+msgstr "Mostra caixa de fons"
 
 #: src/ng_config.c:197
 msgid "Show Mouse-Over Animation"
-msgstr "Animazione al passaggio del mouse"
+msgstr "Mostra animació quan ratolí damunt"
 
 #: src/ng_config.c:202
 msgid "Orientation"
-msgstr "Orientamento"
+msgstr "Orientació"
 
 #: src/ng_config.c:204
 msgid "Bottom Edge"
-msgstr "Bordo inferiore"
+msgstr "Vora inferior"
 
 #: src/ng_config.c:206
 msgid "Top Edge"
-msgstr "Bordo superiore"
+msgstr "Vora superior"
 
 #: src/ng_config.c:208
 msgid "Left Edge"
-msgstr "Bordo sinistro"
+msgstr "Vora esquerra"
 
 #: src/ng_config.c:210
 msgid "Right Edge"
-msgstr "Bordo destro"
+msgstr "Vora dreta"
 
 #: src/ng_config.c:231 src/ng_config.c:250
 msgid "Zoom"
-msgstr "Zoom"
+msgstr "Ampliació"
 
 #: src/ng_config.c:232
 msgid "Factor:"
-msgstr "Fattore:"
+msgstr "Factor:"
 
 #: src/ng_config.c:238
 msgid "Range:"
-msgstr "Intervallo:"
+msgstr "Interval:"
 
 #: src/ng_config.c:244
 msgid "Duration:"
-msgstr "Durata:"
+msgstr "Durada:"
 
 #: src/ng_config.c:253 src/ng_config.c:281
 msgid "Bar Items"
-msgstr "Elementi nella barra"
+msgstr "Elements de la barra"
 
 #: src/ng_config.c:261 src/ng_config.c:547 src/ng_config_instances.c:104
 msgid "Delete"
-msgstr "Elimina"
+msgstr "Suprimeix"
 
 #: src/ng_config.c:263 src/ng_config.c:549 src/ng_config_instances.c:106
 msgid "Configure"
@@ -170,23 +169,23 @@ msgstr "Configura"
 
 #: src/ng_config.c:265
 msgid "Up"
-msgstr "Su"
+msgstr "Puja"
 
 #: src/ng_config.c:267
 msgid "Down"
-msgstr "Giù"
+msgstr "Baixa"
 
 #: src/ng_config.c:272 src/ng_config.c:545 src/ng_config_instances.c:102
 msgid "Add"
-msgstr "Aggiungi"
+msgstr "Afegeix"
 
 #: src/ng_config.c:274
 msgid "Taskbar"
-msgstr "Taskbar"
+msgstr "Barra de tasques"
 
 #: src/ng_config.c:276
 msgid "Launcher"
-msgstr "Lanciatore"
+msgstr "Llançador"
 
 #: src/ng_config.c:278
 msgid "Gadcon"
@@ -194,107 +193,107 @@ msgstr "Gadcon"
 
 #: src/ng_config.c:284 src/ng_config.c:303
 msgid "Auto Hide"
-msgstr "Nascondi automaticamente"
+msgstr "Amaga automàticament"
 
 #: src/ng_config.c:288
 msgid "None"
-msgstr "Nessuno"
+msgstr "Cap"
 
 #: src/ng_config.c:291
 msgid "Autohide"
-msgstr "Nascondi automaticamente"
+msgstr "Amaga automàticament"
 
 #: src/ng_config.c:294
 msgid "Hide when Window overlaps"
-msgstr "Nascondi su sovrapposizione finestra"
+msgstr "Amaga quan alguna finestra es superposi"
 
 #: src/ng_config.c:297
 msgid "Hide on Fullscreen"
-msgstr "Nascondi con finestre a tutto schermo"
+msgstr "Amaga quan pantalla completa"
 
 #: src/ng_config.c:301
 msgid "Show Bar when Urgent"
-msgstr "Mostra barra su Urgenti"
+msgstr "Mostra barra quan sigui urgent"
 
 #: src/ng_config.c:309
 msgid "Stacking"
-msgstr "Livello"
+msgstr "Apilament"
 
 #: src/ng_config.c:311
 msgid "Above All"
-msgstr "Sopra tutto"
+msgstr "Damunt de tot"
 
 #: src/ng_config.c:313
 msgid "Below Fullscreen"
-msgstr "Sotto finestre a tutto schermo"
+msgstr "Sota pantalla completa"
 
 #: src/ng_config.c:317 src/ng_config.c:324
 msgid "Other"
-msgstr "Altro"
+msgstr "Altre"
 
 #: src/ng_config.c:318
 msgid "Ecomorph Features"
-msgstr "Funzionalità Ecomorph"
+msgstr "Característiques Ecomorph"
 
 #: src/ng_config.c:320
 msgid "Show Icon Label"
-msgstr "Mostra etichetta icona"
+msgstr "Mostra etiqueta d'icona"
 
 #: src/ng_config.c:537
 msgid "Launcher Settings"
-msgstr "Impostazioni lanciatore"
+msgstr "Paràmetres Llançadora"
 
 #: src/ng_config.c:557
 msgid "Taskbar Settings"
-msgstr "Impostazioni taskbar"
+msgstr "Paràmetres Barra de tasques"
 
 #: src/ng_config.c:559
 msgid "Don't Show Dialogs"
-msgstr "Non mostrare finestre dialogo"
+msgstr "No mostris diàlegs"
 
 #: src/ng_config.c:562
 msgid "Advanced Window Menu"
-msgstr "Menù finestra avanzato"
+msgstr "Menú avançat"
 
 #: src/ng_config.c:565
 msgid "Only Show Current Desk"
-msgstr "Mostra solo desktop corrente"
+msgstr "Mostra només escriptori actual"
 
 #: src/ng_config.c:568
 msgid "Group Applications by Window Class"
-msgstr "Raggruppa applicazioni per classe finestra"
+msgstr "Agrupa les aplicacions per classe"
 
 #: src/ng_config.c:571
 msgid "Append new Applications on the right Side"
-msgstr "Aggiungi nuove applicazioni sul lato destro"
+msgstr "Afegeix noves aplicacions a la dreta"
 
 #: src/ng_config.c:577
 msgid "Iconified Applications"
-msgstr "Applicazioni iconificate"
+msgstr "Iconifica aplicacions"
 
 #: src/ng_config.c:579
 msgid "Not Shown"
-msgstr "Non mostrate"
+msgstr "No mostrat"
 
 #: src/ng_config.c:581
 msgid "Show"
-msgstr "Mostrate"
+msgstr "Mostra"
 
 #: src/ng_config.c:583
 msgid "Only Iconified"
-msgstr "Solo iconificate"
+msgstr "Només iconificat"
 
 #: src/ng_config.c:652 src/ng_config.c:692
 msgid "Engage Bar Configuration"
-msgstr "Configurazione barra Engage"
+msgstr "Configuració de la barra Engage"
 
 #: src/ng_config.c:797
 msgid "Create new source"
-msgstr "Crea nuova fonte"
+msgstr "Crea nova font"
 
 #: src/ng_config.c:798
 msgid "Enter a name for this new Application Launcher:"
-msgstr "Inserire un nome per il nuovo lanciatore:"
+msgstr "Anomeni el nou llançador d'aplicació:"
 
 #: src/ng_config.c:807
 #, c-format
@@ -302,16 +301,16 @@ msgid ""
 "You requested to delete \"%s\".<br><br>Are you sure you want to delete this "
 "source?"
 msgstr ""
-"Avete richiesto di eliminare \"%s\".<br><br>Siete sicuri di voler eliminare "
-"questa fonte?"
+"Ha sol·licitat eliminar \"%s\".<br><br>Esteu segur que voleu eliminar "
+"aquesta font?"
 
 #: src/ng_config.c:811
 msgid "Are you sure you want to delete this source?"
-msgstr "Siete sicuri di voler eliminare questa fonte?"
+msgstr "Esteu segur que voleu eliminar aquesta font?"
 
 #: src/ng_config_instances.c:64 src/ng_config_instances.c:94
 msgid "Engage Instances"
-msgstr "Istanze di Engage"
+msgstr "Instàncies Engage"
 
 #: src/ng_config_instances.c:164
 msgid "Bar"
@@ -323,9 +322,9 @@ msgid ""
 "You requested to delete \"%s\".<br><br>Are you sure you want to delete this "
 "Instance?"
 msgstr ""
-"Avete richiesto di eliminare \"%s\".<br><br>Siete sicuri di voler eliminare "
-"questa istanza?"
+"Ha sol·licitat eliminar \"%s\".<br><br>Esteu segur que voleu eliminar "
+"aquesta instància?"
 
 #: src/ng_config_instances.c:275
 msgid "Are you sure you want to delete this Instance?"
-msgstr "Siete sicuri di voler eliminare questa istanza?"
+msgstr "Esteu segur que voleu eliminar aquesta instància?"
