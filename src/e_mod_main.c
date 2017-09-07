@@ -2297,15 +2297,15 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg_box->launcher_lock_dnd = 1;
    cfg->boxes = eina_list_append(cfg->boxes, cfg_box);
 
-   /*cfg_box = E_NEW(Config_Box, 1);*/
-   /*cfg_box->type = taskbar;*/
-   /*cfg_box->taskbar_adv_bordermenu = 0;*/
-   /*cfg_box->taskbar_skip_dialogs = 0;*/
-   /*cfg_box->taskbar_show_iconified = 1;*/
-   /*cfg_box->taskbar_show_desktop = 0;*/
-   /*cfg_box->taskbar_append_right = 0;*/
-   /*cfg_box->taskbar_group_apps = 1;*/
-   /*cfg->boxes = eina_list_append(cfg->boxes, cfg_box);*/
+   cfg_box = E_NEW(Config_Box, 1);
+   cfg_box->type = taskbar;
+   cfg_box->taskbar_adv_bordermenu = 1;
+   cfg_box->taskbar_skip_dialogs = 1;
+   cfg_box->taskbar_show_iconified = 1;
+   cfg_box->taskbar_show_desktop = 0;
+   cfg_box->taskbar_append_right = 1;
+   cfg_box->taskbar_group_apps = 1;
+   cfg->boxes = eina_list_append(cfg->boxes, cfg_box);
 
    snprintf(buf, sizeof(buf), "%s/applications/bar/%s",
 	    e_user_dir_get(), app_dir);
