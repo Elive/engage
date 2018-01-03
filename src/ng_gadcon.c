@@ -684,6 +684,8 @@ _set_description(void *data, const char *name)
 
    if (desk->comment)
      e_widget_textblock_markup_set(cfdata->o_desc, desk->comment);
+   else if (desk->generic_name)
+     e_widget_textblock_markup_set(cfdata->o_desc, desk->generic_name);
 
    efreet_desktop_free(desk);
 }

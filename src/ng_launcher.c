@@ -392,10 +392,10 @@ _item_fill(Ngi_Item_Launcher *it)
 	it->o_proxy = o;
      }
    
-   if (it->app->name && it->app->name[0])
-     ngi_item_label_set((Ngi_Item*)it, it->app->name);
-   else if (it->app->generic_name && it->app->generic_name[0])
+   if (it->app->generic_name && it->app->generic_name[0])
      ngi_item_label_set((Ngi_Item*)it, it->app->generic_name);
+   else if (it->app->name && it->app->name[0])
+     ngi_item_label_set((Ngi_Item*)it, it->app->name);
 }
 
 static void
