@@ -2277,7 +2277,7 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->orient = E_GADCON_ORIENT_BOTTOM;
    cfg->size = 28;
    cfg->autohide = AUTOHIDE_OVERLAP;
-   cfg->autohide_show_urgent = 1;
+   cfg->autohide_show_urgent = 0;
    cfg->hide_below_windows = 1;
    cfg->zoom_duration = 0.4;
    cfg->zoom_range = 2.0;
