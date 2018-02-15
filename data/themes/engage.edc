@@ -372,6 +372,7 @@ group { name: "e/modules/engage/icon";
             color: 255 255 255 255;
          }
 
+         // TODO implement the focused window feature
          description {
             state: "focused" 0.0;
             color: 20 120 180 255;
@@ -588,10 +589,17 @@ group {
             color: 255 255 255 0;
          }
          description {
+            state: "pre_huge" 0.0;
+            rel1.relative: -0.6 0.25;
+            rel2.relative: 1.6  0.75;
+         }
+         description {
             state: "huge" 0.0;
             color: 255 255 255 0;
-            rel1.relative: -1.5 -1.5;
-            rel2.relative: 2.5  2.5;
+            /*rel1.relative: -1.5 -1.5;*/
+            /*rel2.relative: 2.5  2.5;*/
+            rel1.relative: -1.8 -1.8;
+            rel2.relative: 2.8  2.8;
          }
       }
 
@@ -641,12 +649,21 @@ group {
       program { name: "go_big";
          action: STATE_SET "visible" 0.0;
          target: "background";
+         /*after: "go_big2";*/
+         after: "go_big_pre1";
+      }
+
+      program { name: "go_big_pre1";
+         action: STATE_SET "pre_huge" 0.0;
+         transition: DECELERATE 0.04;
+         target: "background";
          after: "go_big2";
       }
 
       program { name: "go_big2";
          action: STATE_SET "huge" 0.0;
-         transition: DECELERATE 0.4;
+         /*transition: DECELERATE 0.4;*/
+         transition: DECELERATE 0.5;
          target: "background";
          after: "go_big3";
       }
