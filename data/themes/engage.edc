@@ -26,10 +26,10 @@ collections{
          item: "icon_spacing"    "4";
 
          /* space between boxes */
-         item: "separator_width" "24";
+         item: "separator_width" "20";
 
          /* space between screen edge and icons */
-         item: "edge_offset"    "5";
+         item: "edge_offset"    "6";
 
          /* clip separator to background group change opacity with background transparency */
          item: "clip_separator"  "1";
@@ -68,7 +68,6 @@ collections{
                   normal: "bg.png";
                   border: 6 6 6 6;
                }
-
             }
          }
       }
