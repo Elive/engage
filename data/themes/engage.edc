@@ -15,9 +15,8 @@ images
 }
 
 collections{
-   group {
+   group { name: "e/modules/engage/frame_bottom";
       /* bg frame that keeps is not affected by 'Background Transparency' setting */
-      name: "e/modules/engage/frame_bottom";
       alias: "e/modules/engage/frame_top";
       alias: "e/modules/engage/frame_left";
       alias: "e/modules/engage/frame_right";
@@ -40,8 +39,7 @@ collections{
       }
 
       parts {
-         part {
-            name: "frame";
+         part { name: "frame";
             type: RECT;
             mouse_events: 0;
 
@@ -52,14 +50,12 @@ collections{
          }
       }
    }
-   group {
-      name: "e/modules/engage/bg_bottom";
+   group { name: "e/modules/engage/bg_bottom";
       alias: "e/modules/engage/bg_top";
       alias: "e/modules/engage/bg_left";
       alias: "e/modules/engage/bg_right";
       parts {
-         part {
-            name: "bg";
+         part { name: "bg";
             mouse_events: 0;
 
             description {
@@ -83,8 +79,7 @@ collections{
 group {										\
    name: NAME;								\
    parts {									\
-      part {								\
-         name: "separator";				\
+      part { name: "separator";				\
          type: RECT;						\
          mouse_events: 0;				\
          description {					\
@@ -108,8 +103,7 @@ group {										\
    group {											\
       name: "e/modules/engage/label_"NAME"";		\
       parts {										\
-         part {									\
-            name: "label";						\
+         part { name: "label";						\
             type: IMAGE;						\
             mouse_events: 0;					\
             clip_to: "label.clip";				\
@@ -132,8 +126,7 @@ group {										\
                }								\
             }									\
          }										\
-         part {									\
-            name: "label_decoration";			\
+         part { name: "label_decoration";			\
             type: IMAGE;						\
             mouse_events: 0;					\
             clip_to: "label.clip";				\
@@ -158,8 +151,7 @@ group {										\
                }								\
             }									\
          }										\
-         part {									\
-            name: "e.text.label";				\
+         part { name: "e.text.label";				\
             type: TEXT;							\
             effect: SHADOW;						\
             mouse_events: 0;					\
@@ -183,8 +175,7 @@ group {										\
                }								\
             }									\
          }										\
-         part {									\
-            name: "label.clip";					\
+         part { name: "label.clip";					\
             type: RECT;							\
             mouse_events: 0;					\
             description {						\
@@ -209,16 +200,14 @@ group {										\
          }										\
       }											\
       programs {									\
-         program {								\
-            name: "go_label_show";				\
+         program { name: "go_label_show";				\
             signal: "e,state,label,show";		\
             source: "e";						\
             action: STATE_SET "visible" 0.0;	\
             transition: DECELERATE 0.5;			\
             target: "label.clip";				\
          }										\
-         program {								\
-            name: "go_label_hide";				\
+         program { name: "go_label_hide";				\
             signal: "e,state,label,hide";		\
             source: "e";						\
             action: STATE_SET "default" 0.0;	\
@@ -350,8 +339,7 @@ group {										\
  * 	alias: "e/modules/engage/label_right";
  * } */
 
-group {
-   name: "e/modules/engage/icon";
+group { name: "e/modules/engage/icon";
    alias: "e/modules/engage/icon_top";
    alias: "e/modules/engage/icon_left";
    alias: "e/modules/engage/icon_right";
@@ -361,8 +349,7 @@ group {
    max: 128 128;
 
    parts {
-      part {
-         name: "clip";
+      part { name: "clip";
          type: RECT;
          mouse_events: 0;
 
@@ -375,8 +362,7 @@ group {
             color: 255 255 255 255;
          }
       }
-      part {
-         name: "focus_clip";
+      part { name: "focus_clip";
          type: RECT;
          clip_to: "clip";
          mouse_events: 0;
@@ -391,8 +377,7 @@ group {
             color: 20 120 180 255;
          }
       }
-      part {
-         name: "iconic_clip";
+      part { name: "iconic_clip";
          type: RECT;
          clip_to: "focus_clip";
          mouse_events: 0;
@@ -408,8 +393,7 @@ group {
          }
       }
 
-      part {
-         name: "urgent_clip";
+      part { name: "urgent_clip";
          type: RECT;
          clip_to: "iconic_clip";
          mouse_events: 0;
@@ -424,8 +408,7 @@ group {
          }
       }
 
-      part {
-         name: "input_clip";
+      part { name: "input_clip";
          type: RECT;
          clip_to: "urgent_clip";
          mouse_events: 0;
@@ -440,8 +423,7 @@ group {
          }
       }
 
-      part {
-         name: "e.swallow.content";
+      part { name: "e.swallow.content";
          type: SWALLOW;
          clip_to: "input_clip";
          description {
@@ -453,8 +435,7 @@ group {
    }
 
    programs {
-      program {
-         name: "go_show";
+      program { name: "go_show";
          signal: "e,state,item,show";
          source: "e";
          action: STATE_SET "visible" 0.0;
@@ -462,8 +443,7 @@ group {
          target: "clip";
       }
 
-      program {
-         name: "go_hide";
+      program { name: "go_hide";
          signal: "e,state,item,hide";
          source: "e";
          action: STATE_SET "default" 0.0;
@@ -472,16 +452,14 @@ group {
       }
 
       /* when minimizing an application */
-      program {
-         name: "go_iconic1";
+      program { name: "go_iconic1";
          signal: "e,state,taskbar,iconic,on";
          source: "e";
          action: STATE_SET "iconic" 0.0;
          transition: LINEAR 0.3;
          target: "iconic_clip";
       }
-      program {
-         name: "go_iconic0";
+      program { name: "go_iconic0";
          signal: "e,state,taskbar,iconic,off";
          source: "e";
          action: STATE_SET "default" 0.0;
@@ -490,8 +468,7 @@ group {
       }
 
       /* when an application got focus */
-      program {
-         name: "go_focused1";
+      program { name: "go_focused1";
          signal: "e,state,taskbar,focus,on";
          source: "e";
          action: STATE_SET "focused" 0.0;
@@ -499,8 +476,7 @@ group {
          target: "focus_clip";
       }
 
-      program {
-         name: "go_focused0";
+      program { name: "go_focused0";
          signal: "e,state,taskbar,focus,off";
          source: "e";
          action: STATE_SET "default" 0.0;
@@ -509,8 +485,7 @@ group {
       }
 
       /* application is sending urgent signal  */
-      program {
-         name: "go_urgent";
+      program { name: "go_urgent";
          signal: "e,state,taskbar,urgent,on";
          source: "e";
          action: ACTION_STOP;
@@ -519,24 +494,21 @@ group {
          after: "go_urgent1";
       }
 
-      program {
-         name: "go_urgent1";
+      program { name: "go_urgent1";
          action: STATE_SET "urgent" 0.0;
          transition: LINEAR 1.0;
          target: "urgent_clip";
          after: "go_urgent2";
       }
 
-      program {
-         name: "go_urgent2";
+      program { name: "go_urgent2";
          action: STATE_SET "default" 0.0;
          transition: LINEAR 1.0;
          target: "urgent_clip";
          after: "go_urgent1";
       }
 
-      program {
-         name: "go_urgent0";
+      program { name: "go_urgent0";
          signal: "e,state,taskbar,urgent,off";
          source: "e";
          action: ACTION_STOP;
@@ -545,15 +517,13 @@ group {
          after: "go_urgent_end";
       }
 
-      program {
-         name: "go_urgent_end";
+      program { name: "go_urgent_end";
          action: STATE_SET "default" 0.0;
          transition: LINEAR 0.2;
          target: "urgent_clip";
       }
 
-      program {
-         name: "go_mouse_down";
+      program { name: "go_mouse_down";
          signal: "e,state,mouse,down";
          source: "e";
          action: STATE_SET "mouse_down" 0.0;
@@ -561,8 +531,7 @@ group {
          target: "input_clip";
          after: "go_mouse_down2";
       }
-      program {
-         name: "go_mouse_down2";
+      program { name: "go_mouse_down2";
          action: STATE_SET "default" 0.0;
          transition: LINEAR 0.3;
          target: "input_clip";
@@ -585,8 +554,7 @@ group {
    alias: "e/modules/engage/icon_over_bottom";
 
    parts {
-      part {
-         name: "icon_clip";
+      part { name: "icon_clip";
          type: RECT;
          mouse_events: 0;
 
@@ -598,8 +566,7 @@ group {
             rel2.offset: 256 256;
          }
       }
-      part {
-         name: "background";
+      part { name: "background";
          type: RECT;
          mouse_events: 0;
 
@@ -628,8 +595,7 @@ group {
          }
       }
 
-      part {
-         name: "e.swallow.content";
+      part { name: "e.swallow.content";
          type: SWALLOW;
          clip_to: "background";
 
@@ -667,35 +633,30 @@ group {
       /*target: "go_active2";*/
       /*after: "go_passive2";*/
       /*}*/
-      program {
-         name: "go_passive2";
+      program { name: "go_passive2";
          action: STATE_SET "default" 0.0;
          target: "background";
       }
 
-      program {
-         name: "go_big";
+      program { name: "go_big";
          action: STATE_SET "visible" 0.0;
          target: "background";
          after: "go_big2";
       }
 
-      program {
-         name: "go_big2";
+      program { name: "go_big2";
          action: STATE_SET "huge" 0.0;
          transition: DECELERATE 0.4;
          target: "background";
          after: "go_big3";
       }
 
-      program {
-         name: "go_big3";
+      program { name: "go_big3";
          action: STATE_SET "default" 0.0;
          target: "background";
       }
 
-      program {
-         name: "exec_start";
+      program { name: "exec_start";
          signal: "e,action,start";
          source: "e";
          action: ACTION_STOP;
