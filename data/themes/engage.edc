@@ -12,6 +12,7 @@ images
    image:"itask_im5.png" COMP;
    image:"itask_im6.png" COMP;
    image:"bg.png" COMP;
+   image:"status.png" COMP;
 }
 
 collections{
@@ -362,56 +363,10 @@ group { name: "e/modules/engage/icon";
             color: 255 255 255 255;
          }
       }
-      part { name: "focus_clip";
-         type: RECT;
-         clip_to: "clip";
-         mouse_events: 0;
-
-         description {
-            state: "default" 0.0;
-            color: 255 255 255 255;
-         }
-
-         // TODO implement the focused window feature
-         description {
-            state: "focused" 0.0;
-            color: 20 120 180 255;
-         }
-      }
-      part { name: "iconic_clip";
-         type: RECT;
-         clip_to: "focus_clip";
-         mouse_events: 0;
-
-         description {
-            state: "default" 0.0;
-            color: 255 255 255 255;
-         }
-
-         description {
-            state: "iconic" 0.0;
-            color: 200 80 200 255;
-         }
-      }
-
-      part { name: "urgent_clip";
-         type: RECT;
-         clip_to: "iconic_clip";
-         mouse_events: 0;
-
-         description {
-            state: "default" 0.0;
-            color: 255 255 255 255;
-         }
-         description {
-            state: "urgent" 0.0;
-            color: 255 180 10 255;
-         }
-      }
-
       part { name: "input_clip";
          type: RECT;
-         clip_to: "urgent_clip";
+         /*clip_to: "urgent_clip";*/
+         clip_to: "clip";
          mouse_events: 0;
 
          description {
@@ -424,7 +379,6 @@ group { name: "e/modules/engage/icon";
             color: 100 100 100 255;
          }
       }
-
       part { name: "e.swallow.content";
          type: SWALLOW;
          clip_to: "input_clip";
@@ -434,6 +388,72 @@ group { name: "e/modules/engage/icon";
             aspect_preference: BOTH;
          }
       }
+
+
+      part { name: "focus_clip";
+         mouse_events: 0;
+         description {
+            state: "default" 0.0;
+            rel1.to: "clip";
+            rel2.to: "clip";
+            /*aspect: 1 1;*/
+            rel1.relative: 0.4 -0.3;
+            rel2.relative: 0.6 -0.1;
+            image {
+               normal: "status.png";
+            }
+            color: 255 255 255 0;
+         }
+         description {
+            state: "focused" 0.0;
+            inherit:  "default" 0.0;
+            // note: these colors needs to be the same as the window borders buttons, for intuitiveness
+            /*color: 110 255 0 200; // green-maximize*/
+            color: 0 222 255 200; // blue-fullscreen
+         }
+      }
+      part { name: "iconic_clip";
+         mouse_events: 0;
+         description {
+            state: "default" 0.0;
+            rel1.to: "clip";
+            rel2.to: "clip";
+            rel1.relative: 0.4 -0.3;
+            rel2.relative: 0.6 -0.1;
+            image {
+               normal: "status.png";
+            }
+            color: 255 255 255 0;
+         }
+         description {
+            state: "iconic" 0.0;
+            inherit:  "default" 0.0;
+            // note: these colors needs to be the same as the window borders buttons, for intuitiveness
+            color: 255 230 0 200;
+         }
+      }
+      part { name: "urgent_clip";
+         mouse_events: 0;
+         description {
+            state: "default" 0.0;
+            rel1.to: "clip";
+            rel2.to: "clip";
+            rel1.relative: 0.4 -0.3;
+            rel2.relative: 0.6 -0.1;
+            image {
+               normal: "status.png";
+            }
+            color: 255 255 255 0;
+         }
+         description {
+            state: "urgent" 0.0;
+            inherit:  "default" 0.0;
+            // note: these colors needs to be the same as the window borders buttons, for intuitiveness
+            /*color: 255 0 75 200; // red-close*/
+            color: 110 255 0 255; // green-maximize
+         }
+      }
+
    }
 
    programs {
@@ -498,14 +518,14 @@ group { name: "e/modules/engage/icon";
 
       program { name: "go_urgent1";
          action: STATE_SET "urgent" 0.0;
-         transition: LINEAR 1.0;
+         transition: LINEAR 0.6;
          target: "urgent_clip";
          after: "go_urgent2";
       }
 
       program { name: "go_urgent2";
          action: STATE_SET "default" 0.0;
-         transition: LINEAR 1.0;
+         transition: LINEAR 0.6;
          target: "urgent_clip";
          after: "go_urgent1";
       }
