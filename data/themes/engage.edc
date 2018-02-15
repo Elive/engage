@@ -397,8 +397,8 @@ group { name: "e/modules/engage/icon";
             rel1.to: "clip";
             rel2.to: "clip";
             /*aspect: 1 1;*/
-            rel1.relative: 0.4 -0.4;
-            rel2.relative: 0.6 -0.2;
+            rel1.relative: 0.35 -0.45;
+            rel2.relative: 0.65 -0.15;
             image {
                normal: "status.png";
             }
@@ -409,7 +409,7 @@ group { name: "e/modules/engage/icon";
             inherit:  "default" 0.0;
             // note: these colors needs to be the same as the window borders buttons, for intuitiveness
             /*color: 110 255 0 200; // green-maximize*/
-            color: 0 222 255 200; // blue-fullscreen
+            color: 0 222 255 150; // blue-fullscreen
          }
       }
       part { name: "iconic_clip";
@@ -418,8 +418,8 @@ group { name: "e/modules/engage/icon";
             state: "default" 0.0;
             rel1.to: "clip";
             rel2.to: "clip";
-            rel1.relative: 0.4 -0.4;
-            rel2.relative: 0.6 -0.2;
+            rel1.relative: 0.35 -0.45;
+            rel2.relative: 0.65 -0.15;
             image {
                normal: "status.png";
             }
@@ -429,7 +429,7 @@ group { name: "e/modules/engage/icon";
             state: "iconic" 0.0;
             inherit:  "default" 0.0;
             // note: these colors needs to be the same as the window borders buttons, for intuitiveness
-            color: 255 230 0 200;
+            color: 255 230 0 150;
          }
       }
       part { name: "urgent_clip";
@@ -438,8 +438,8 @@ group { name: "e/modules/engage/icon";
             state: "default" 0.0;
             rel1.to: "clip";
             rel2.to: "clip";
-            rel1.relative: 0.4 -0.4;
-            rel2.relative: 0.6 -0.2;
+            rel1.relative: 0.35 -0.45;
+            rel2.relative: 0.65 -0.15;
             image {
                normal: "status.png";
             }
