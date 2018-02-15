@@ -204,7 +204,7 @@ group {										\
             signal: "e,state,label,show";		\
             source: "e";						\
             action: STATE_SET "visible" 0.0;	\
-            transition: DECELERATE 0.5;			\
+            transition: DECELERATE 0.6;			\
             target: "label.clip";				\
          }										\
          program { name: "go_label_hide";				\
@@ -346,7 +346,7 @@ group { name: "e/modules/engage/icon";
    alias: "e/modules/engage/icon_bottom";
 
    min: 32 32;
-   max: 128 128;
+   max: 256 256;
 
    parts {
       part { name: "clip";
