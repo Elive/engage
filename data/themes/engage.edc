@@ -420,7 +420,8 @@ group { name: "e/modules/engage/icon";
          }
          description {
             state: "mouse_down" 0.0;
-            color: 100 160 160 255;
+            /*color: 100 160 160 255;*/
+            color: 100 100 100 255;
          }
       }
 
