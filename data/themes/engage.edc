@@ -409,7 +409,7 @@ group { name: "e/modules/engage/icon";
             inherit:  "default" 0.0;
             // note: these colors needs to be the same as the window borders buttons, for intuitiveness
             /*color: 110 255 0 200; // green-maximize*/
-            color: 0 222 255 150; // blue-fullscreen
+            color: 0 222 255 200; // blue-fullscreen
          }
       }
       part { name: "iconic_clip";
@@ -429,7 +429,7 @@ group { name: "e/modules/engage/icon";
             state: "iconic" 0.0;
             inherit:  "default" 0.0;
             // note: these colors needs to be the same as the window borders buttons, for intuitiveness
-            color: 255 230 0 150;
+            color: 255 230 0 200;
          }
       }
       part { name: "urgent_clip";
