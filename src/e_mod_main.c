@@ -2275,14 +2275,14 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->container = container_num;
    cfg->zone = zone_num;
    cfg->orient = E_GADCON_ORIENT_BOTTOM;
-   cfg->size = 28;
+   cfg->size = 30;
    cfg->autohide = AUTOHIDE_OVERLAP;
    cfg->autohide_show_urgent = 0;
    cfg->hide_below_windows = 1;
    cfg->zoom_duration = 0.4;
    cfg->zoom_range = 2.0;
    cfg->hide_timeout = 0.1;
-   cfg->zoomfactor = 2.3;
+   cfg->zoomfactor = 2.32;
    cfg->alpha = 255;
    cfg->stacking = ENGAGE_BELOW_FULLSCREEN;
    cfg->old_stacking = cfg->stacking;
