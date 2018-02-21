@@ -408,8 +408,8 @@ group { name: "e/modules/engage/icon";
             state: "focused" 0.0;
             inherit:  "default" 0.0;
             // note: these colors needs to be the same as the window borders buttons, for intuitiveness
-            /*color: 110 255 0 200; // green-maximize*/
-            color: 0 222 255 200; // blue-fullscreen
+            color: 110 255 0 200; // green-maximize
+            /*color: 0 222 255 200; // blue-fullscreen*/
          }
       }
       part { name: "iconic_clip";
