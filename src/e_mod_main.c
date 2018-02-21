@@ -1,6 +1,6 @@
 #include "e_mod_main.h"
 
-#define WINDOW_HEIGHT   320
+#define WINDOW_HEIGHT   380
 #define TEXT_DIST       45
 #define SIDE_OFFSET     30
 
