@@ -1,6 +1,6 @@
 #include "e_mod_main.h"
 
-#define WINDOW_HEIGHT   250
+#define WINDOW_HEIGHT   320
 #define TEXT_DIST       45
 #define SIDE_OFFSET     30
 
@@ -2275,14 +2275,14 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->container = container_num;
    cfg->zone = zone_num;
    cfg->orient = E_GADCON_ORIENT_BOTTOM;
-   cfg->size = 30;
+   cfg->size = 32;
    cfg->autohide = AUTOHIDE_OVERLAP;
    cfg->autohide_show_urgent = 0;
    cfg->hide_below_windows = 1;
    cfg->zoom_duration = 0.4;
-   cfg->zoom_range = 2.0;
+   cfg->zoom_range = 2.1;
    cfg->hide_timeout = 0.1;
-   cfg->zoomfactor = 2.32;
+   cfg->zoomfactor = 2.4;
    cfg->alpha = 255;
    cfg->stacking = ENGAGE_BELOW_FULLSCREEN;
    cfg->old_stacking = cfg->stacking;
