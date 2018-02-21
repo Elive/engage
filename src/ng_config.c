@@ -219,7 +219,7 @@ _basic_create_widgets(E_Config_Dialog *cfd EINA_UNUSED, Evas *evas, E_Config_Dia
    of = e_widget_framelist_add(evas, D_("Appearance"), 0);
    ob = e_widget_label_add (evas, D_("Icon Size:"));
    e_widget_framelist_object_append (of, ob);
-   ob = e_widget_slider_add (evas, 1, 0, D_("%1.0f px"), 16.0, 128,
+   ob = e_widget_slider_add (evas, 1, 0, D_("%1.0f px"), 8.0, 92,
                              1.0, 0, NULL, &(cfdata->size), 100);
    e_widget_on_change_hook_set(ob, _cb_slider_change, cfdata);
    e_widget_framelist_object_append (of, ob);
