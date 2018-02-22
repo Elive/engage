@@ -449,8 +449,8 @@ group { name: "e/modules/engage/icon";
             state: "urgent" 0.0;
             inherit:  "default" 0.0;
             // note: these colors needs to be the same as the window borders buttons, for intuitiveness
-            /*color: 255 0 75 200; // red-close*/
-            color: 0 222 255 200; // blue-fullscreen
+            color: 255 0 75 200; // red-close
+            /*color: 0 222 255 200; // blue-fullscreen*/
          }
       }
 
