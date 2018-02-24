@@ -2282,7 +2282,7 @@ ngi_bar_config_new(int container_num, int zone_num)
    cfg->zoom_duration = 0.4;
    cfg->zoom_range = 2.1;
    cfg->hide_timeout = 0.1;
-   cfg->zoomfactor = 2.4;
+   cfg->zoomfactor = 2.5;
    cfg->alpha = 255;
    cfg->stacking = ENGAGE_BELOW_FULLSCREEN;
    cfg->old_stacking = cfg->stacking;
