@@ -620,8 +620,8 @@ group {
             color: 255 255 255 0;
             /*rel1.relative: -1.5 -1.5;*/
             /*rel2.relative: 2.5  2.5;*/
-            rel1.relative: -1.8 -1.8;
-            rel2.relative: 2.8  2.8;
+            rel1.relative: -1.6 -1.6;
+            rel2.relative: 2.6  2.6;
          }
       }
 
