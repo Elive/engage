@@ -677,7 +677,7 @@ group {
 
       program { name: "go_big_pre1";
          action: STATE_SET "pre_huge" 0.0;
-         transition: DECELERATE 0.04;
+         transition: DECELERATE 0.10;
          target: "background";
          after: "go_big2";
       }
