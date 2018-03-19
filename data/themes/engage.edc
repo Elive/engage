@@ -397,8 +397,8 @@ group { name: "e/modules/engage/icon";
             rel1.to: "clip";
             rel2.to: "clip";
             /*aspect: 1 1;*/
-            rel1.relative: 0.35 -0.45;
-            rel2.relative: 0.65 -0.15;
+            rel1.relative: 0.35 -0.35;
+            rel2.relative: 0.65 -0.05;
             image {
                normal: "status.png";
             }
@@ -418,8 +418,8 @@ group { name: "e/modules/engage/icon";
             state: "default" 0.0;
             rel1.to: "clip";
             rel2.to: "clip";
-            rel1.relative: 0.35 -0.45;
-            rel2.relative: 0.65 -0.15;
+            rel1.relative: 0.35 -0.35;
+            rel2.relative: 0.65 -0.05;
             image {
                normal: "status.png";
             }
@@ -438,8 +438,8 @@ group { name: "e/modules/engage/icon";
             state: "default" 0.0;
             rel1.to: "clip";
             rel2.to: "clip";
-            rel1.relative: 0.35 -0.45;
-            rel2.relative: 0.65 -0.15;
+            rel1.relative: 0.35 -0.35;
+            rel2.relative: 0.65 -0.05;
             image {
                normal: "status.png";
             }
