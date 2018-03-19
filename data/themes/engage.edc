@@ -550,13 +550,13 @@ group { name: "e/modules/engage/icon";
          signal: "e,state,mouse,down";
          source: "e";
          action: STATE_SET "mouse_down" 0.0;
-         transition: LINEAR 0.2;
+         transition: LINEAR 0.08;
          target: "input_clip";
          after: "go_mouse_down2";
       }
       program { name: "go_mouse_down2";
          action: STATE_SET "default" 0.0;
-         transition: LINEAR 0.3;
+         transition: LINEAR 0.14;
          target: "input_clip";
       }
       /* program {
@@ -610,11 +610,12 @@ group {
 
             color: 255 255 255 0;
          }
-         description {
-            state: "pre_huge" 0.0;
-            rel1.relative: -0.6 0.25;
-            rel2.relative: 1.6  0.75;
-         }
+         // shrinked mode
+         /*description {*/
+            /*state: "pre_huge" 0.0;*/
+            /*rel1.relative: -0.6 0.25;*/
+            /*rel2.relative: 1.6  0.75;*/
+         /*}*/
          description {
             state: "huge" 0.0;
             color: 255 255 255 0;
@@ -639,6 +640,7 @@ group {
 
    programs {
 
+      // Flashy effect when mouse-in
       /*program {*/
       /*name: "go_active";*/
       /*signal: "e,state,animate,in";*/
@@ -671,16 +673,17 @@ group {
       program { name: "go_big";
          action: STATE_SET "visible" 0.0;
          target: "background";
-         /*after: "go_big2";*/
-         after: "go_big_pre1";
+         after: "go_big2";
+         /*after: "go_big_pre1";*/
       }
 
-      program { name: "go_big_pre1";
-         action: STATE_SET "pre_huge" 0.0;
-         transition: DECELERATE 0.10;
-         target: "background";
-         after: "go_big2";
-      }
+      // Bumpy effect (not so nice?)
+      /*program { name: "go_big_pre1";*/
+         /*action: STATE_SET "pre_huge" 0.0;*/
+         /*transition: DECELERATE 0.10;*/
+         /*target: "background";*/
+         /*after: "go_big2";*/
+      /*}*/
 
       program { name: "go_big2";
          action: STATE_SET "huge" 0.0;
