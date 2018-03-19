@@ -313,33 +313,98 @@ _cb_drop_end(void *data, const char *type, void *event_info)
    ngi_input_extents_calc(box->ng);
 }
 
-/* ******************************* LAUNCHER ITEM ********************************** */
+/*
+ * This function searches $PATH for the given exec
+ * return true if is found!
+ */
+static Eina_Bool
+_app_valid_finder(const char *exec)
+{
+   const char *env = getenv("PATH");
+   char **split, buf[PATH_MAX];
+   Eina_Bool exec_found = EINA_FALSE;
+   int i = 0;
 
+   if (strchr(exec, '/'))
+     {
+        if (ecore_file_exists(exec) && ecore_file_can_exec(exec))
+          return EINA_TRUE;
+     }
+
+   if (!env)
+     {
+        ERR("Unable to $PATH, Returning TRUE for every .desktop");
+        return EINA_TRUE;
+     }
+
+   split = eina_str_split(env, ":", 0);
+   for (i = 0; split[i] != NULL; i++)
+     {
+        snprintf(buf, sizeof(buf), "%s/%s", split[i], exec);
+
+        if (ecore_file_exists(buf) && ecore_file_can_exec(buf))
+          {
+             exec_found = EINA_TRUE;
+             break;
+          }
+     }
+   free(split[0]);
+   free(split);
+
+   if (!exec_found)
+     ERR("Unable to find: [%s] I searched $PATH=%s", exec, env);
+
+   return exec_found;
+}
+
+
+/* ******************************* LAUNCHER ITEM ********************************** */
 static void
 _item_new(Ngi_Box *box, Efreet_Desktop *desktop, int instant, Ngi_Item_Launcher *after)
 {
-   Ngi_Item_Launcher *it;
+   Eina_Bool valid = EINA_TRUE;
 
-   it = E_NEW(Ngi_Item_Launcher, 1);
-   it->base.box = box;
-   ngi_item_init_defaults((Ngi_Item*)it);
+   if (desktop->try_exec)
+     valid = _app_valid_finder(desktop->try_exec);
+   else if (desktop->exec)
+     {
+        if (!strchr(desktop->exec, ' '))
+          valid = _app_valid_finder(desktop->exec);
+        else
+          {
+             char **split;
+             split = eina_str_split(desktop->exec, " ", 0);
+             valid = _app_valid_finder(split[0]);
+             free(split[0]);
+             free(split);
+          }
+     }
 
-   it->base.cb_free = _item_cb_free;
-   it->base.cb_mouse_down = _item_cb_mouse_down;
-   it->base.cb_mouse_up = _item_cb_mouse_up;
-   it->base.cb_drag_start = _item_cb_drag_start;
+   if (valid)
+     {
+        Ngi_Item_Launcher *it;
 
-   efreet_desktop_ref(desktop);
-   it->app = desktop;
+        it = E_NEW(Ngi_Item_Launcher, 1);
+        it->base.box = box;
+        ngi_item_init_defaults((Ngi_Item*)it);
 
-   _item_fill(it);
+        it->base.cb_free = _item_cb_free;
+        it->base.cb_mouse_down = _item_cb_mouse_down;
+        it->base.cb_mouse_up = _item_cb_mouse_up;
+        it->base.cb_drag_start = _item_cb_drag_start;
 
-   if (after)
-     box->items = eina_list_prepend_relative(box->items, it, after);
-   else
-     box->items = eina_list_append(box->items, it);
+        efreet_desktop_ref(desktop);
+        it->app = desktop;
 
-   ngi_item_show((Ngi_Item*)it, instant);
+        _item_fill(it);
+
+        if (after)
+          box->items = eina_list_prepend_relative(box->items, it, after);
+        else
+          box->items = eina_list_append(box->items, it);
+
+        ngi_item_show((Ngi_Item*)it, instant);
+     }
 }
 
 static void
