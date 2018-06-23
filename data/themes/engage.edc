@@ -163,11 +163,11 @@ group {										\
                align: ALIGN;					\
                color: 255 255 255 240;			\
                color3: 0 0 0 0;				\
-               rel1.offset: 0 2;				\
+               rel1.offset: 0 1;				\
                rel2.offset: -1 -1;				\
                text {							\
                   text: "";					\
-                  font: "Sans";	\
+                  font: "DejaVu Sans";	\
                   size: 18;					\
                   min: 1 1;					\
                   align: 0.5 0.5;				\
@@ -274,7 +274,7 @@ group {										\
 
             text {
             text: "";
-            font: "Sans:style=Bold";
+            font: "DejaVu Sans:style=Bold";
             size: 11;
             min: 1 1;
             align: 0.5 0.5;
