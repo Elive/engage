@@ -250,10 +250,17 @@ ngi_new(Config_Item *cfg)
 
    //ng->win = _ngi_win_new(ng);
 
-   if (ng->cfg->shaped_set)
-     ng->win = _ngi_shaped_win_new(ng);
-   else
+   /*ng->win = _ngi_composite_win_new(ng);*/
+   if (ecore_x_screen_is_composited(e_manager_current_get()->num))
      ng->win = _ngi_composite_win_new(ng);
+   else
+     {
+        // we never want real shaped, is ugly, slow, and better to have the dock in the desktop perfectly-good looking instead (not above possible)
+        /*if (ng->cfg->shaped_set)*/
+          /*ng->win = _ngi_shaped_win_new(ng);*/
+        /*else */
+          ng->win = _ngi_desktop_win_new(ng);
+     }
 
    if (!ng->win)
      {
@@ -598,8 +605,8 @@ _ngi_desktop_win_new(Ng *ng)
    win = E_NEW(Ngi_Win, 1);
    if (!win) return NULL;
 
-   if (ecore_x_screen_is_composited(e_manager_current_get()->num))
-     return NULL;
+   /*if (ecore_x_screen_is_composited(e_manager_current_get()->num))*/
+     /*return NULL;*/
 
    win->ng = ng;
 
@@ -640,6 +647,7 @@ _ngi_shaped_win_new(Ng *ng)
    win->ng = ng;
    INF("win_type = ENGAGE_WIN_SHAPED");
    ng->win_type = ENGAGE_WIN_SHAPED;
+
    ng->shaped_active = EINA_TRUE;
 
    win->popup = e_popup_new(ng->zone, 0, 0, 0, 0);
