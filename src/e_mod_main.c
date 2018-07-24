@@ -117,6 +117,15 @@ _ngi_win_cb_change_event(void *data, int type EINA_UNUSED, void *event EINA_UNUS
    Ng *ng = data;
    if (!ng) return EINA_TRUE;
 
+   // this segfaults the desktop, we never want to change to a different shaped mode, so let's run this fix here
+   if (ng->cfg->shaped_set && !ng->shaped_active)
+     {
+        INF("ENGAGE_EVENT_WIN_CHANGE setting back to 0: Shaped was: %d", ng->cfg->shaped_set);
+        ng->cfg->shaped_set = EINA_FALSE;
+     }
+   return EINA_TRUE;
+   //
+
 
    if (ng->cfg->shaped_set && !ng->shaped_active)
      {
@@ -124,7 +133,7 @@ _ngi_win_cb_change_event(void *data, int type EINA_UNUSED, void *event EINA_UNUS
         Eina_List *l;
         Config_Item *ci;
 
-        //WRN("ENGAGE_EVENT_WIN_CHANGE Shaped: %d", ng->cfg->shaped_set);
+        WRN("aaaa ENGAGE_EVENT_WIN_CHANGE Shaped: %d", ng->cfg->shaped_set);
         EINA_LIST_FOREACH(ngi_config->items, l, ci)
           {
              evas_object_hide(ci->ng->o_label);
@@ -140,7 +149,7 @@ _ngi_win_cb_change_event(void *data, int type EINA_UNUSED, void *event EINA_UNUS
         Eina_List *l;
         Config_Item *ci;
 
-        //WRN("ENGAGE_EVENT_WIN_CHANGE Shaped: %d", ng->cfg->shaped_set);
+        WRN("bbbb ENGAGE_EVENT_WIN_CHANGE Shaped: %d", ng->cfg->shaped_set);
         EINA_LIST_FOREACH(ngi_config->items, l, ci)
           {
              ngi_free(ci->ng);
@@ -617,6 +626,10 @@ _ngi_desktop_win_new(Ng *ng)
    win->input = ecore_x_window_input_new(ng->zone->container->win, 0, 0, 1, 1);
    ecore_x_window_show(win->input);
    e_drop_xdnd_register_set(win->input, 1);
+
+   ng->cfg->shaped_set = EINA_FALSE;
+   // try to force value to use the same 'if's
+   ngi_config->use_composite = EINA_TRUE;
 
    win->fake_iwin = E_OBJECT_ALLOC(E_Win, E_WIN_TYPE, NULL);
    win->fake_iwin->x = 0;
