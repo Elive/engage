@@ -71,7 +71,7 @@ _ngi_win_cb_composite_activated(void *data EINA_UNUSED, int type EINA_UNUSED, vo
         Eina_List *l;
         Config_Item *ci;
 
-        //INF("Composite activated");
+        INF("Composite activated");
         EINA_LIST_FOREACH(ngi_config->items, l, ci)
           {
              evas_object_hide(ci->ng->o_label);
@@ -98,7 +98,7 @@ _ngi_win_cb_composite_deactivated(void *data, int type EINA_UNUSED, void *event 
         Eina_List *l;
         Config_Item *ci;
 
-        //INF("Composite deactivated");
+        INF("Composite deactivated");
         EINA_LIST_FOREACH(ngi_config->items, l, ci)
           {
              evas_object_hide(ci->ng->o_label);
