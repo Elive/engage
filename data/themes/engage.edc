@@ -24,19 +24,19 @@ collections{
 
       data {
          /* space between icons */
-         item: "icon_spacing"    "4";
+         item: "icon_spacing"    "5";
 
          /* space between boxes */
-         item: "separator_width" "20";
+         item: "separator_width" "40";
 
          /* space between screen edge and icons */
-         item: "edge_offset"    "6";
+         item: "edge_offset"    "8";
 
          /* clip separator to background group change opacity with background transparency */
          item: "clip_separator"  "1";
 
          /* extra space between icons and bg required for autohide to hide the whole background) */
-         item: "bg_offset" "10";
+         item: "bg_offset" "8";
       }
 
       parts {
