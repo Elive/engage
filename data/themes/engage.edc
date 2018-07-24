@@ -27,7 +27,7 @@ collections{
          item: "icon_spacing"    "5";
 
          /* space between boxes */
-         item: "separator_width" "40";
+         item: "separator_width" "34";
 
          /* space between screen edge and icons */
          item: "edge_offset"    "8";
