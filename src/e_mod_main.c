@@ -581,6 +581,9 @@ _ngi_composite_win_new(Ng *ng)
    win->drop_win = E_OBJECT(win->popup);
    ng->evas = win->popup->evas;
 
+   ng->cfg->shaped_set = EINA_FALSE;
+   ngi_config->use_composite = EINA_TRUE;
+
    e_drop_xdnd_register_set(win->input, 1);
    ecore_x_netwm_window_type_set(win->evas_win, ECORE_X_WINDOW_TYPE_DOCK);
 
