@@ -36,7 +36,10 @@ collections{
          item: "clip_separator"  "1";
 
          /* extra space between icons and bg required for autohide to hide the whole background) */
-         item: "bg_offset" "8";
+         // this one should be enough for normal size
+         /*item: "bg_offset" "18";*/
+         // but if the bar is set to max size, it needs to be bigger:
+         item: "bg_offset" "30";
       }
 
       parts {
